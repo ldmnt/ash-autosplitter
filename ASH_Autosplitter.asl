@@ -211,7 +211,7 @@ split {
 
     if (vars.lastFeatherCount == current.feather - 1) {
         vars.lastFeatherCount = current.feather;
-        return settings[current.feathers];
+        return settings["feather" + current.feather.ToString()];
     }
 
     return
