@@ -17,11 +17,13 @@ startup {
         { "May", new float[3] { 611.85f, 27.89f, 299.51f } }
     };
 
-    // summit area description
+    // player collision capsule
+    vars.PLAYER_HEIGHT = 1.923962f;
+    vars.PLAYER_RADIUS_SQUARED = 0.16f;
+
+    // summit area description (rectangular box defined by its center and half extents)
     vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
-    vars.SUMMIT_GROUND_ALTITUDE = 602.02f;
-    vars.SUMMIT_MAX_ALTITUDE = 620f;    // approximation
-    vars.SUMMIT_SQUARED_RADIUS = 160f;   // approximation, the summit area is actually a cuboid
+    vars.SUMMIT_SIZE = new float[3] { 7.326245f, 7.15712f, 4.547681f };
 
     settings.Add("splits", true, "Choose your splits here!");
         settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
@@ -78,15 +80,22 @@ startup {
         return res; 
     });
 
-    vars.horizontalSquaredDistance = (Func<float[], float[], float>) ((v1, v2) =>
-    {
-        float res = 0;
-        for (int i = 0; i < 3; i += 2)
-        {
-            float diff = v2[i] - v1[i];
-            res += diff * diff;
-        }
-        return res;
+    vars.clamp = (Func<float, float, float, float>) ((val, min, max) => {
+        return Math.Max(Math.Min(val, max), min);
+    });
+
+    vars.checkCircleRectangleCollision = (Func<float, float, float, float, float, float, float, bool>) 
+        ((circleCenterX, circleCenterY, circleRadiusSquared, rectCenterX, rectCenterY, rectSizeX, rectSizeY) => {
+        float diffX = circleCenterX - rectCenterX;
+        float diffY = circleCenterY - rectCenterY;
+        float clampedX = vars.clamp(diffX, - rectSizeX, rectSizeX);
+        float clampedY = vars.clamp(diffY, - rectSizeY, rectSizeY);
+        float closestX = rectCenterX + clampedX;
+        float closestY = rectCenterY + clampedY;
+        diffX = closestX - circleCenterX;
+        diffY = closestY - circleCenterY;
+        float lengthSquared = diffX * diffX + diffY * diffY;
+        return lengthSquared < circleRadiusSquared;
     });
 }
 
@@ -96,6 +105,7 @@ init {
     vars.lastFeatherCount = 0;
     vars.justSavedAndQuit = false;
     vars.reachedSummit = false;
+    vars.currentIAS = false;
 }
 
 update {
@@ -141,12 +151,17 @@ split {
         {
             vars.justSavedAndQuit = false;
         }
-    }
+    }  
 
-    bool isAtSummit =
-        vars.horizontalSquaredDistance(vars.position, vars.SUMMIT) < vars.SUMMIT_SQUARED_RADIUS &&
-        vars.SUMMIT_GROUND_ALTITUDE - 0.05f < vars.position[1] &&
-        vars.position[1] < vars.SUMMIT_MAX_ALTITUDE;
+    // note : increased player radius to avoid undetected collisions
+    bool isAtSummit =   
+        vars.position[1] < vars.SUMMIT[1] + vars.SUMMIT_SIZE[1] + vars.PLAYER_HEIGHT / 2 && 
+        vars.position[1] > vars.SUMMIT[1] - vars.SUMMIT_SIZE[1] - vars.PLAYER_HEIGHT / 2 && 
+        vars.checkCircleRectangleCollision(
+            vars.position[0], vars.position[2], vars.PLAYER_RADIUS_SQUARED * 6.0f,      
+            vars.SUMMIT[0], vars.SUMMIT[2], vars.SUMMIT_SIZE[0], vars.SUMMIT_SIZE[2]
+        );
+       
     if (isAtSummit && !vars.reachedSummit && settings["summit"])
     {
         vars.reachedSummit = true;
