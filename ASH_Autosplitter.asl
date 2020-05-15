@@ -3,6 +3,7 @@ state("AShortHike") {
     // int silverFeathers: "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x270;
     byte12 position      : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
     int screen           : "UnityPlayer.dll", 0x105C480, 0x3C;
+    int startend         : "UnityPlayer.dll", 0x105C800, 0x12C;
     float igt            : "UnityPlayer.dll", 0x10B6780, 0x4, 0x4, 0x14, 0x0, 0x48, 0x18, 0x28;
 }
 
@@ -160,10 +161,7 @@ update {
 }
 
 start {
-    return
-        (old.igt == 0 && current.igt > 0 && current.screen == 612) ||
-        (old.igt == 0 && current.igt > 0 && current.screen == 516) ||
-        (old.igt == 0 && current.igt > 0 && current.screen == 216);
+    return (old.startend == 2 && current.startend == 0 && current.igt == 0);
 }
 
 split {
@@ -201,13 +199,12 @@ split {
     }
 
     return
-        (current.screen == 96) ||
-        (current.screen == 108 && old.screen == 384) ||
+        (old.startend == 0 && current.startend == 2 && current.igt > 0) ||
         (vars.shells != null && vars.shells.Changed && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]); 
 }
 
 reset {
-    if (current.screen == 24)
+    if (old.startend == 0 && current.startend == 2 && current.igt == 0)
     {
         vars.lastFeatherCount = 0;
         vars.reachedSummit = false;
