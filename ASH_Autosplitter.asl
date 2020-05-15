@@ -4,6 +4,8 @@ state("AShortHike") {
     byte12 position      : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
     int screen           : "UnityPlayer.dll", 0x105C480, 0x3C;
     float igt            : "UnityPlayer.dll", 0x10B6780, 0x4, 0x4, 0x14, 0x0, 0x48, 0x18, 0x28;
+    int shells           : "mono-2.0-bdwgc.dll", 0x39B56C, 0xFE4, 0xC, 0xC, 0xC, 0xC, 0x2C;
+    bool gameRunning     : "mono-2.0-bdwgc.dll", 0x39B56C, 0xFE4, 0x10, 0x10, 0x24;
 }
 
 startup {
@@ -20,9 +22,6 @@ startup {
     vars.SUMMIT_GROUND_ALTITUDE = 602.02f;
     vars.SUMMIT_MAX_ALTITUDE = 620f;    // approximation
     vars.SUMMIT_SQUARED_RADIUS = 160f;   // approximation, the summit area is actually a cuboid
-
-    // scan target to get a pointer to the game's GlobalData singleton class
-    vars.sigScanTarget = new SigScanTarget(37, "C745AC00000000C745B000000000C745B400000000BA????????8BC0E8????????894720BA????????8D6D00E8????????89458C85FF");
 
     settings.Add("splits", true, "Choose your splits here!");
         settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
@@ -69,11 +68,6 @@ startup {
             settings.Add("May", false, "Aunt May", "sandq");
         settings.Add("summit", true, "Splitting upon reaching the summit", "splits");
 
-    vars.createShellsWatcher = (Func<IntPtr, MemoryWatcher>) (globalData =>
-    {
-        return new MemoryWatcher<int>(new DeepPointer(globalData, 0x24, 0x4, 0x0, 0xC, 0xC, 0xC, 0xC, 0x2C));
-    });
-
     vars.squaredDistance = (Func<float[], float[], float>) ((v1, v2) => {
         float res = 0;
         for (int i = 0; i < v1.Length; i++)
@@ -97,48 +91,14 @@ startup {
 }
 
 init {
-    // launch sigscan in background
-    vars.shells = null;
-    ThreadStart startScan = new ThreadStart(() => {
-        print("scan started");
-        var ptr = IntPtr.Zero;
-        while (ptr == IntPtr.Zero)
-        {
-            foreach (var page in game.MemoryPages(true))
-            {
-                var scanner = new SignatureScanner(game, page.BaseAddress, (int)page.RegionSize);
-                if ((ptr = scanner.Scan(vars.sigScanTarget)) != IntPtr.Zero)
-                {
-                    break;
-                }
-            }
-            if (ptr == IntPtr.Zero)
-            {
-                print("scan not successful yet");
-                Thread.Sleep(1000);
-            }
-        }
-        vars.shells = vars.createShellsWatcher(ptr);
-        print("scan finished - base address found : 0x" + ptr.ToString("x"));
-    });
-
-    vars.thread = new Thread(startScan);
-    vars.thread.Start();
-
     vars.lastValidIGT = 0;
     vars.position = new float[3] { 0.0f, 0.0f, 0.0f };
     vars.lastFeatherCount = 0;
+    vars.justSavedAndQuit = false;
+    vars.reachedSummit = false;
 }
 
 update {
-    // wait for scan to finish
-    if (vars.shells == null)
-    {
-        return false;
-    }
-
-    vars.shells.Update(game);
-
     if (current.position != null)
     {
         Buffer.BlockCopy(current.position, 0, vars.position, 0, 12);
@@ -153,19 +113,19 @@ update {
 }
 
 start {
-    bool mustStart = 
+    return
         (old.igt == 0 && current.igt > 0 && current.screen == 612) ||
         (old.igt == 0 && current.igt > 0 && current.screen == 516) ||
         (old.igt == 0 && current.igt > 0 && current.screen == 216);
-    if (mustStart)
-    {
-        vars.reachedSummit = false;
-    }
-    return mustStart;
 }
 
 split {
-    if (old.screen == 192 && current.screen == 0)
+    if (!old.gameRunning && current.gameRunning)
+    {
+        vars.justSavedAndQuit = true;
+    }
+
+    if (vars.justSavedAndQuit)
     {
         foreach (var keyValue in vars.SAVE_AND_QUIT_SPLITS)
         {
@@ -173,8 +133,13 @@ split {
             float[] location = keyValue.Value;
             if (splitEnabled && vars.squaredDistance(vars.position, location) < 5.0f)
             {
+                vars.justSavedAndQuit = false;
                 return true;
             }
+        }
+        if (vars.position[0] > 0)
+        {
+            vars.justSavedAndQuit = false;
         }
     }
 
@@ -182,7 +147,6 @@ split {
         vars.horizontalSquaredDistance(vars.position, vars.SUMMIT) < vars.SUMMIT_SQUARED_RADIUS &&
         vars.SUMMIT_GROUND_ALTITUDE - 0.05f < vars.position[1] &&
         vars.position[1] < vars.SUMMIT_MAX_ALTITUDE;
-
     if (isAtSummit && !vars.reachedSummit && settings["summit"])
     {
         vars.reachedSummit = true;
@@ -197,13 +161,15 @@ split {
     return
         (current.screen == 96) ||
         (current.screen == 108 && old.screen == 384) ||
-        (vars.shells.Changed && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]); 
+        (old.shells < current.shells && settings["shell" + current.shells.ToString()]); 
 }
 
 reset {
     if (current.screen == 24)
     {
         vars.lastFeatherCount = 0;
+        vars.justSavedAndQuit = false;
+        vars.reachedSummit = false;
         return true;
     }
 }
