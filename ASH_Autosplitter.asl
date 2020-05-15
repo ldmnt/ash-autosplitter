@@ -1,25 +1,28 @@
-// to customize split points, change the global parameters in the "startup" block
-
-state("AShortHike"){
+state("AShortHike") {
     int feather          : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x234;
     // int silverFeathers: "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x270;
     byte12 position      : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
     int screen           : "UnityPlayer.dll", 0x105C480, 0x3C;
+    int startend         : "UnityPlayer.dll", 0x105C800, 0x12C;
     float igt            : "UnityPlayer.dll", 0x10B6780, 0x4, 0x4, 0x14, 0x0, 0x48, 0x18, 0x28;
 }
 
-startup{
-    // do not modify
-    vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
-    vars.SUMMIT_GROUND_ALTITUDE = 602.02f;
-    vars.SUMMIT_MAX_ALTITUDE = 620f;    // approximation
-    vars.SUMMIT_SQUARED_RADIUS = 160f;   // approximation, the summit area is actually a cuboid
-    vars.VISITOR_CENTER = new float[3] { 157.98f, 32.20f, 122.22f };
-    vars.OUTLOOK = new float[3] { 266.04f, 253.27f, 347.58f };
-    vars.FROST = new float[3] { 253.58f, 319.51f, 587.67f };
-    vars.MAY = new float[3] { 611.85f, 27.89f, 299.51f };
+startup {
+    // coordinates to check against the player location after save and quits
+    vars.SAVE_AND_QUIT_SPLITS = new Dictionary<string, float[]>() {
+        { "Outlook", new float[3] { 266.04f, 253.27f, 347.58f } },
+        { "Center", new float[3] { 157.98f, 32.20f, 122.22f } },
+        { "Frost", new float[3] { 253.58f, 319.51f, 587.67f } },
+        { "May", new float[3] { 611.85f, 27.89f, 299.51f } }
+    };
 
-    vars.sigScanTarget = new SigScanTarget(37, "C745AC00000000C745B000000000C745B400000000BA????????8BC0E8????????894720BA????????8D6D00E8????????89458C85FF");
+    // player collision capsule
+    vars.PLAYER_HEIGHT = 1.923962f;
+    vars.PLAYER_RADIUS_SQUARED = 0.16f;
+
+    // summit area description (rectangular box defined by its center and half extents)
+    vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
+    vars.SUMMIT_SIZE = new float[3] { 7.326245f, 7.15712f, 4.547681f };
 
     settings.Add("splits", true, "Choose your splits here!");
         settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
@@ -65,45 +68,39 @@ startup{
             settings.Add("Outlook", false, "Outlook", "sandq");
             settings.Add("May", false, "Aunt May", "sandq");
         settings.Add("summit", true, "Splitting upon reaching the summit", "splits");
-}
 
-init {
-    // sigscan for GlobalData instance
-    ThreadStart startScan = new ThreadStart(() => {
-        print("scan started");
-        var ptr = IntPtr.Zero;
-        while (ptr == IntPtr.Zero)
-        {
-            foreach (var page in game.MemoryPages(true))
+    vars.createShellsWatcher = (Action<Process>) ((proc) => {
+        // scan target to get a pointer to the game's GlobalData singleton class
+        var sigScanTarget = new SigScanTarget(37, "C745AC00000000C745B000000000C745B400000000BA????????8BC0E8????????894720BA????????8D6D00E8????????89458C85FF");
+
+        // launch sigscan in background
+        ThreadStart startScan = new ThreadStart(() => {
+            print("scan started");
+            var ptr = IntPtr.Zero;
+            foreach (var page in proc.MemoryPages(true))
             {
-                var scanner = new SignatureScanner(game, page.BaseAddress, (int)page.RegionSize);
-                if ((ptr = scanner.Scan(vars.sigScanTarget)) != IntPtr.Zero)
+                var scanner = new SignatureScanner(proc, page.BaseAddress, (int)page.RegionSize);
+                if ((ptr = scanner.Scan(sigScanTarget)) != IntPtr.Zero)
                 {
                     break;
                 }
             }
             if (ptr == IntPtr.Zero)
             {
-                print("scan not successful yet");
-                Thread.Sleep(1000);
+                print("scan failed, cannot track shells");
             }
-        }
-        vars.globalData = ptr;
-        vars.shellsPtr = new DeepPointer(vars.globalData, 0x24, 0x4, 0x0, 0xC, 0xC, 0xC, 0xC, 0x2C);
-        print("scan finished : " + vars.globalData.ToString("x"));
+            else
+            {
+                print("scan finished - base address found : 0x" + ptr.ToString("x"));
+                vars.shells = new MemoryWatcher<int>(new DeepPointer(ptr, 0x24, 0x4, 0x0, 0xC, 0xC, 0xC, 0xC, 0x2C));
+            }
+        });
+
+        vars.thread = new Thread(startScan);
+        vars.thread.Start();
     });
-    
-    vars.globalData = IntPtr.Zero;
-    vars.thread = new Thread(startScan);
-    vars.thread.Start();
 
-    vars.lastValidIGT = 0;
-    vars.position = new float[3] { 0.0f, 0.0f, 0.0f };
-    vars.shells = 0;
-    vars.lastFeatherCount = 0;
-
-    vars.squaredDistance = (Func<float[], float[], float>) ((v1, v2) => 
-    {
+    vars.squaredDistance = (Func<float[], float[], float>) ((v1, v2) => {
         float res = 0;
         for (int i = 0; i < v1.Length; i++)
         {
@@ -113,36 +110,35 @@ init {
         return res; 
     });
 
-    vars.horizontalSquaredDistance = (Func<float[], float[], float>) ((v1, v2) =>
-    {
-        float res = 0;
-        for (int i = 0; i < 3; i += 2)
-        {
-            float diff = v2[i] - v1[i];
-            res += diff * diff;
-        }
-        return res;
+    vars.clamp = (Func<float, float, float, float>) ((val, min, max) => {
+        return Math.Max(Math.Min(val, max), min);
     });
 
-    vars.initialize = (Action) (() =>
-    {
-        vars.reachedSummit = false;
-        vars.justSavedAndQuit = false;
-        vars.saveAndQuitSplit = false;
+    vars.checkCircleRectangleCollision = (Func<float, float, float, float, float, float, float, bool>) 
+        ((circleCenterX, circleCenterY, circleRadiusSquared, rectCenterX, rectCenterY, rectSizeX, rectSizeY) => {
+        float diffX = circleCenterX - rectCenterX;
+        float diffY = circleCenterY - rectCenterY;
+        float clampedX = vars.clamp(diffX, - rectSizeX, rectSizeX);
+        float clampedY = vars.clamp(diffY, - rectSizeY, rectSizeY);
+        float closestX = rectCenterX + clampedX;
+        float closestY = rectCenterY + clampedY;
+        diffX = closestX - circleCenterX;
+        diffY = closestY - circleCenterY;
+        float lengthSquared = diffX * diffX + diffY * diffY;
+        return lengthSquared < circleRadiusSquared;
     });
-    vars.initialize();
+}
+
+init {
+    vars.lastValidIGT = 0;
+    vars.position = new float[3] { 0.0f, 0.0f, 0.0f };
+    vars.lastFeatherCount = 0;
+    vars.reachedSummit = false;
+    vars.shells = null;
+    vars.shellsInitialized = false;
 }
 
 update {
-    // Wait for scan to finish
-    if (vars.globalData == IntPtr.Zero)
-    {
-        return false;
-    }
-
-    vars.oldShells = vars.shells;
-    vars.shells = vars.shellsPtr.Deref<int>(game);
-
     if (current.position != null)
     {
         Buffer.BlockCopy(current.position, 0, vars.position, 0, 12);
@@ -155,54 +151,42 @@ update {
         }
     }
 
-    vars.justSavedAndQuit = (old.screen == 192 && current.screen == 0);
-
-    if (vars.justSavedAndQuit)
+    if (!vars.shellsInitialized && vars.position[0] > 0)
     {
-        bool isAtVisitorCenter = vars.squaredDistance(vars.position, vars.VISITOR_CENTER) < 5.0f;
-        bool isAtOutlook = vars.squaredDistance(vars.position, vars.OUTLOOK) < 5.0f;
-        bool isAtFrost = vars.squaredDistance(vars.position, vars.FROST) < 5.0f;
-        bool isAtMay = vars.squaredDistance(vars.position, vars.MAY) < 5.0f;
-
-        if (
-            isAtVisitorCenter && settings["Center"] ||
-            isAtOutlook && settings["Outlook"] ||
-            isAtFrost && settings["Frost"] ||
-            isAtMay && settings["May"])
-        {
-            vars.saveAndQuitSplit = true;
-            vars.justSavedAndQuit = false;
-        }
-        else if (vars.position[0] > 0.0f)
-        {
-            vars.justSavedAndQuit = false;
-        }
+        vars.shellsInitialized = true;
+        vars.createShellsWatcher(game);
     }
+
+    if (vars.shells != null) { vars.shells.Update(game); }
 }
 
 start {
-    bool must_start = 
-        (old.igt == 0 && current.igt > 0 && current.screen == 612) ||
-        (old.igt == 0 && current.igt > 0 && current.screen == 516) ||
-        (old.igt == 0 && current.igt > 0 && current.screen == 216);
-
-    if (must_start) vars.initialize();
-
-    return must_start;
+    return (old.startend == 2 && current.startend == 0 && current.igt == 0);
 }
 
 split {
-    if (vars.saveAndQuitSplit)
+    if (old.screen == 192 && current.screen == 0)
     {
-        vars.saveAndQuitSplit = false;
-        return true;
+        foreach (var keyValue in vars.SAVE_AND_QUIT_SPLITS)
+        {
+            bool splitEnabled = settings[keyValue.Key];
+            float[] location = keyValue.Value;
+            if (splitEnabled && vars.squaredDistance(vars.position, location) < 5.0f)
+            {
+                return true;
+            }
+        }
     }
 
-    bool isAtSummit =
-        vars.horizontalSquaredDistance(vars.position, vars.SUMMIT) < vars.SUMMIT_SQUARED_RADIUS &&
-        vars.SUMMIT_GROUND_ALTITUDE - 0.05f < vars.position[1] &&
-        vars.position[1] < vars.SUMMIT_MAX_ALTITUDE;
-
+    // note : increased player radius to avoid undetected collisions
+    bool isAtSummit =   
+        vars.position[1] < vars.SUMMIT[1] + vars.SUMMIT_SIZE[1] + vars.PLAYER_HEIGHT / 2 && 
+        vars.position[1] > vars.SUMMIT[1] - vars.SUMMIT_SIZE[1] - vars.PLAYER_HEIGHT / 2 && 
+        vars.checkCircleRectangleCollision(
+            vars.position[0], vars.position[2], vars.PLAYER_RADIUS_SQUARED * 6.0f,      
+            vars.SUMMIT[0], vars.SUMMIT[2], vars.SUMMIT_SIZE[0], vars.SUMMIT_SIZE[2]
+        );
+       
     if (isAtSummit && !vars.reachedSummit && settings["summit"])
     {
         vars.reachedSummit = true;
@@ -215,15 +199,15 @@ split {
     }
 
     return
-        (current.screen == 96) ||
-        (current.screen == 108 && old.screen == 384) ||
-        (vars.oldShells < vars.shells && settings["shell" + vars.shells.ToString()]); 
+        (old.startend == 0 && current.startend == 2 && current.igt > 0) ||
+        (vars.shells != null && vars.shells.Changed && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]); 
 }
 
 reset {
-    if (current.screen == 24)
+    if (old.startend == 0 && current.startend == 2 && current.igt == 0)
     {
         vars.lastFeatherCount = 0;
+        vars.reachedSummit = false;
         return true;
     }
 }
@@ -233,11 +217,12 @@ isLoading {
 }
 
 gameTime {
-    if(current.igt != 0)
+    if (current.igt != 0)
     {
         vars.lastValidIGT = current.igt;
         return TimeSpan.FromSeconds(current.igt);
-    }else
+    }
+    else
     {
         return TimeSpan.FromSeconds(vars.lastValidIGT);
     }
