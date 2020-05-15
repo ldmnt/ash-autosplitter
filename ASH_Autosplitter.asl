@@ -15,14 +15,13 @@ startup {
         { "May", new float[3] { 611.85f, 27.89f, 299.51f } }
     };
 
-    // summit area description
-    vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
-    vars.SUMMIT_GROUND_ALTITUDE = 602.02f;
-    vars.SUMMIT_MAX_ALTITUDE = 620f;    // approximation
-    vars.SUMMIT_SQUARED_RADIUS = 160f;   // approximation, the summit area is actually a cuboid
+    // player collision capsule
+    vars.PLAYER_HEIGHT = 1.923962f;
+    vars.PLAYER_RADIUS_SQUARED = 0.16f;
 
-    // scan target to get a pointer to the game's GlobalData singleton class
-    vars.sigScanTarget = new SigScanTarget(37, "C745AC00000000C745B000000000C745B400000000BA????????8BC0E8????????894720BA????????8D6D00E8????????89458C85FF");
+    // summit area description (rectangular box defined by its center and half extents)
+    vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
+    vars.SUMMIT_SIZE = new float[3] { 7.326245f, 7.15712f, 4.547681f };
 
     settings.Add("splits", true, "Choose your splits here!");
         settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
@@ -69,9 +68,35 @@ startup {
             settings.Add("May", false, "Aunt May", "sandq");
         settings.Add("summit", true, "Splitting upon reaching the summit", "splits");
 
-    vars.createShellsWatcher = (Func<IntPtr, MemoryWatcher>) (globalData =>
-    {
-        return new MemoryWatcher<int>(new DeepPointer(globalData, 0x24, 0x4, 0x0, 0xC, 0xC, 0xC, 0xC, 0x2C));
+    vars.createShellsWatcher = (Action<Process>) ((proc) => {
+        // scan target to get a pointer to the game's GlobalData singleton class
+        var sigScanTarget = new SigScanTarget(37, "C745AC00000000C745B000000000C745B400000000BA????????8BC0E8????????894720BA????????8D6D00E8????????89458C85FF");
+
+        // launch sigscan in background
+        ThreadStart startScan = new ThreadStart(() => {
+            print("scan started");
+            var ptr = IntPtr.Zero;
+            foreach (var page in proc.MemoryPages(true))
+            {
+                var scanner = new SignatureScanner(proc, page.BaseAddress, (int)page.RegionSize);
+                if ((ptr = scanner.Scan(sigScanTarget)) != IntPtr.Zero)
+                {
+                    break;
+                }
+            }
+            if (ptr == IntPtr.Zero)
+            {
+                print("scan failed, cannot track shells");
+            }
+            else
+            {
+                print("scan finished - base address found : 0x" + ptr.ToString("x"));
+                vars.shells = new MemoryWatcher<int>(new DeepPointer(ptr, 0x24, 0x4, 0x0, 0xC, 0xC, 0xC, 0xC, 0x2C));
+            }
+        });
+
+        vars.thread = new Thread(startScan);
+        vars.thread.Start();
     });
 
     vars.squaredDistance = (Func<float[], float[], float>) ((v1, v2) => {
@@ -84,61 +109,35 @@ startup {
         return res; 
     });
 
-    vars.horizontalSquaredDistance = (Func<float[], float[], float>) ((v1, v2) =>
-    {
-        float res = 0;
-        for (int i = 0; i < 3; i += 2)
-        {
-            float diff = v2[i] - v1[i];
-            res += diff * diff;
-        }
-        return res;
+    vars.clamp = (Func<float, float, float, float>) ((val, min, max) => {
+        return Math.Max(Math.Min(val, max), min);
+    });
+
+    vars.checkCircleRectangleCollision = (Func<float, float, float, float, float, float, float, bool>) 
+        ((circleCenterX, circleCenterY, circleRadiusSquared, rectCenterX, rectCenterY, rectSizeX, rectSizeY) => {
+        float diffX = circleCenterX - rectCenterX;
+        float diffY = circleCenterY - rectCenterY;
+        float clampedX = vars.clamp(diffX, - rectSizeX, rectSizeX);
+        float clampedY = vars.clamp(diffY, - rectSizeY, rectSizeY);
+        float closestX = rectCenterX + clampedX;
+        float closestY = rectCenterY + clampedY;
+        diffX = closestX - circleCenterX;
+        diffY = closestY - circleCenterY;
+        float lengthSquared = diffX * diffX + diffY * diffY;
+        return lengthSquared < circleRadiusSquared;
     });
 }
 
 init {
-    // launch sigscan in background
-    vars.shells = null;
-    ThreadStart startScan = new ThreadStart(() => {
-        print("scan started");
-        var ptr = IntPtr.Zero;
-        while (ptr == IntPtr.Zero)
-        {
-            foreach (var page in game.MemoryPages(true))
-            {
-                var scanner = new SignatureScanner(game, page.BaseAddress, (int)page.RegionSize);
-                if ((ptr = scanner.Scan(vars.sigScanTarget)) != IntPtr.Zero)
-                {
-                    break;
-                }
-            }
-            if (ptr == IntPtr.Zero)
-            {
-                print("scan not successful yet");
-                Thread.Sleep(1000);
-            }
-        }
-        vars.shells = vars.createShellsWatcher(ptr);
-        print("scan finished - base address found : 0x" + ptr.ToString("x"));
-    });
-
-    vars.thread = new Thread(startScan);
-    vars.thread.Start();
-
     vars.lastValidIGT = 0;
     vars.position = new float[3] { 0.0f, 0.0f, 0.0f };
     vars.lastFeatherCount = 0;
+    vars.reachedSummit = false;
+    vars.shells = null;
+    vars.shellsInitialized = false;
 }
 
 update {
-    // wait for scan to finish
-    if (vars.shells == null)
-    {
-        return false;
-    }
-
-    vars.shells.Update(game);
-
     if (current.position != null)
     {
         Buffer.BlockCopy(current.position, 0, vars.position, 0, 12);
@@ -150,18 +149,21 @@ update {
             vars.position[i] = 0;
         }
     }
+
+    if (!vars.shellsInitialized && vars.position[0] > 0)
+    {
+        vars.shellsInitialized = true;
+        vars.createShellsWatcher(game);
+    }
+
+    if (vars.shells != null) { vars.shells.Update(game); }
 }
 
 start {
-    bool mustStart = 
+    return
         (old.igt == 0 && current.igt > 0 && current.screen == 612) ||
         (old.igt == 0 && current.igt > 0 && current.screen == 516) ||
         (old.igt == 0 && current.igt > 0 && current.screen == 216);
-    if (mustStart)
-    {
-        vars.reachedSummit = false;
-    }
-    return mustStart;
 }
 
 split {
@@ -178,11 +180,15 @@ split {
         }
     }
 
-    bool isAtSummit =
-        vars.horizontalSquaredDistance(vars.position, vars.SUMMIT) < vars.SUMMIT_SQUARED_RADIUS &&
-        vars.SUMMIT_GROUND_ALTITUDE - 0.05f < vars.position[1] &&
-        vars.position[1] < vars.SUMMIT_MAX_ALTITUDE;
-
+    // note : increased player radius to avoid undetected collisions
+    bool isAtSummit =   
+        vars.position[1] < vars.SUMMIT[1] + vars.SUMMIT_SIZE[1] + vars.PLAYER_HEIGHT / 2 && 
+        vars.position[1] > vars.SUMMIT[1] - vars.SUMMIT_SIZE[1] - vars.PLAYER_HEIGHT / 2 && 
+        vars.checkCircleRectangleCollision(
+            vars.position[0], vars.position[2], vars.PLAYER_RADIUS_SQUARED * 6.0f,      
+            vars.SUMMIT[0], vars.SUMMIT[2], vars.SUMMIT_SIZE[0], vars.SUMMIT_SIZE[2]
+        );
+       
     if (isAtSummit && !vars.reachedSummit && settings["summit"])
     {
         vars.reachedSummit = true;
@@ -197,13 +203,14 @@ split {
     return
         (current.screen == 96) ||
         (current.screen == 108 && old.screen == 384) ||
-        (vars.shells.Changed && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]); 
+        (vars.shells != null && vars.shells.Changed && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]); 
 }
 
 reset {
     if (current.screen == 24)
     {
         vars.lastFeatherCount = 0;
+        vars.reachedSummit = false;
         return true;
     }
 }
