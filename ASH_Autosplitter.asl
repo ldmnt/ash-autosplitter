@@ -171,7 +171,7 @@ split {
         {
             bool splitEnabled = settings[keyValue.Key];
             float[] location = keyValue.Value;
-            if (splitEnabled && vars.squaredDistance(vars.position, location) < 5.0f)
+            if (splitEnabled && vars.squaredDistance(vars.position, location) < 10.0f)
             {
                 return true;
             }
