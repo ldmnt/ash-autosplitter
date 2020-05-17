@@ -2,7 +2,7 @@ state("AShortHike") {
     int feather          : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x234;
     // int silverFeathers: "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x270;
     byte12 position      : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
-    int screen           : "UnityPlayer.dll", 0x105C480, 0x3C;
+    // int screen        : "UnityPlayer.dll", 0x105C480, 0x3C;
     int startend         : "UnityPlayer.dll", 0x105C800, 0x12C;
     float igt            : "UnityPlayer.dll", 0x10B6780, 0x4, 0x4, 0x14, 0x0, 0x48, 0x18, 0x28;
 }
@@ -127,6 +127,20 @@ startup {
         float lengthSquared = diffX * diffX + diffY * diffY;
         return lengthSquared < circleRadiusSquared;
     });
+
+    vars.copyArray = (Action<Array, Array>) ((src, dst) => {
+        if (src != null)
+        {
+            Buffer.BlockCopy(src, 0, dst, 0, 12);
+        }
+        else
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                dst.SetValue(0.0f, i);
+            }
+        }
+    });
 }
 
 init {
@@ -139,17 +153,7 @@ init {
 }
 
 update {
-    if (current.position != null)
-    {
-        Buffer.BlockCopy(current.position, 0, vars.position, 0, 12);
-    }
-    else
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            vars.position[i] = 0;
-        }
-    }
+    vars.copyArray(current.position, vars.position);
 
     if (!vars.shellsInitialized && vars.position[0] > 0)
     {
@@ -165,13 +169,13 @@ start {
 }
 
 split {
-    if (old.screen == 192 && current.screen == 0)
+    if (old.position == null && current.position != null)
     {
         foreach (var keyValue in vars.SAVE_AND_QUIT_SPLITS)
         {
             bool splitEnabled = settings[keyValue.Key];
             float[] location = keyValue.Value;
-            if (splitEnabled && vars.squaredDistance(vars.position, location) < 5.0f)
+            if (splitEnabled && vars.squaredDistance(vars.position, location) < 10.0f)
             {
                 return true;
             }
