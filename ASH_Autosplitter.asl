@@ -165,7 +165,7 @@ update {
 }
 
 start {
-    return (old.startend == 2 && current.startend == 0 && current.igt == 0);
+    return (old.startend == 2 && current.startend == 0 && current.igt < 0.1f);
 }
 
 split {
@@ -208,7 +208,7 @@ split {
 }
 
 reset {
-    if (old.startend == 0 && current.startend == 2 && current.igt == 0)
+    if (old.startend == 0 && current.startend == 2 && current.igt < 0.1f)
     {
         vars.lastFeatherCount = 0;
         vars.reachedSummit = false;
