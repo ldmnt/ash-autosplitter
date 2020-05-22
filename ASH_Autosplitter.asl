@@ -24,50 +24,49 @@ startup {
     vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
     vars.SUMMIT_SIZE = new float[3] { 7.326245f, 7.15712f, 4.547681f };
 
-    settings.Add("splits", true, "Choose your splits here!");
-        settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
-            settings.Add("feather1", true, "Feather N° 1", "feathers");
-            settings.Add("feather2", true, "Feather N° 2", "feathers");
-            settings.Add("feather3", true, "Feather N° 3", "feathers");
-            settings.Add("feather4", true, "Feather N° 4", "feathers");
-            settings.Add("feather5", true, "Feather N° 5", "feathers");
-            settings.Add("feather6", true, "Feather N° 6", "feathers");
-            settings.Add("feather7", true, "Feather N° 7", "feathers");
-            settings.Add("feather8", true, "Feather N° 8", "feathers");
-            settings.Add("feather9", true, "Feather N° 9", "feathers");
-            settings.Add("feather10", true, "Feather N° 10", "feathers");
-            settings.Add("feather11", true, "Feather N° 11", "feathers");
-            settings.Add("feather12", true, "Feather N° 12", "feathers");
-            settings.Add("feather13", true, "Feather N° 13", "feathers");
-            settings.Add("feather14", true, "Feather N° 14", "feathers");
-            settings.Add("feather15", true, "Feather N° 15", "feathers");
-            settings.Add("feather16", true, "Feather N° 16", "feathers");
-            settings.Add("feather17", true, "Feather N° 17", "feathers");
-            settings.Add("feather18", true, "Feather N° 18", "feathers");
-            settings.Add("feather19", true, "Feather N° 19", "feathers");
-            settings.Add("feather20", true, "Feather N° 20", "feathers");
-        settings.Add("shells", false, "Splitting upon collecting a specified number of shells, regardless of order:", "splits");
-            settings.Add("shell1", false, "Shell N° 1", "shells");
-            settings.Add("shell2", false, "Shell N° 2", "shells");
-            settings.Add("shell3", false, "Shell N° 3", "shells");
-            settings.Add("shell4", false, "Shell N° 4", "shells");
-            settings.Add("shell5", false, "Shell N° 5", "shells");
-            settings.Add("shell6", false, "Shell N° 6", "shells");
-            settings.Add("shell7", false, "Shell N° 7", "shells");
-            settings.Add("shell8", false, "Shell N° 8", "shells");
-            settings.Add("shell9", false, "Shell N° 9", "shells");
-            settings.Add("shell10", false, "Shell N° 10", "shells");
-            settings.Add("shell11", false, "Shell N° 11", "shells");
-            settings.Add("shell12", false, "Shell N° 12", "shells");
-            settings.Add("shell13", false, "Shell N° 13", "shells");
-            settings.Add("shell14", false, "Shell N° 14", "shells");
-            settings.Add("shell15", false, "Shell N° 15", "shells");
-        settings.Add("sandq", false, "Splitting upon specified Save & Quit locations:", "splits");
-            settings.Add("Center", false, "Visitor Center", "sandq");
-            settings.Add("Frost", false, "Frost Zone", "sandq");
-            settings.Add("Outlook", false, "Outlook", "sandq");
-            settings.Add("May", false, "Aunt May", "sandq");
-        settings.Add("summit", true, "Splitting upon reaching the summit", "splits");
+    settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
+        settings.Add("feather1", true, "Feather N° 1", "feathers");
+        settings.Add("feather2", true, "Feather N° 2", "feathers");
+        settings.Add("feather3", true, "Feather N° 3", "feathers");
+        settings.Add("feather4", true, "Feather N° 4", "feathers");
+        settings.Add("feather5", true, "Feather N° 5", "feathers");
+        settings.Add("feather6", true, "Feather N° 6", "feathers");
+        settings.Add("feather7", true, "Feather N° 7", "feathers");
+        settings.Add("feather8", true, "Feather N° 8", "feathers");
+        settings.Add("feather9", true, "Feather N° 9", "feathers");
+        settings.Add("feather10", true, "Feather N° 10", "feathers");
+        settings.Add("feather11", true, "Feather N° 11", "feathers");
+        settings.Add("feather12", true, "Feather N° 12", "feathers");
+        settings.Add("feather13", true, "Feather N° 13", "feathers");
+        settings.Add("feather14", true, "Feather N° 14", "feathers");
+        settings.Add("feather15", true, "Feather N° 15", "feathers");
+        settings.Add("feather16", true, "Feather N° 16", "feathers");
+        settings.Add("feather17", true, "Feather N° 17", "feathers");
+        settings.Add("feather18", true, "Feather N° 18", "feathers");
+        settings.Add("feather19", true, "Feather N° 19", "feathers");
+        settings.Add("feather20", true, "Feather N° 20", "feathers");
+    settings.Add("shells", false, "Splitting upon collecting a specified number of shells, regardless of order:", "splits");
+        settings.Add("shell1", false, "Shell N° 1", "shells");
+        settings.Add("shell2", false, "Shell N° 2", "shells");
+        settings.Add("shell3", false, "Shell N° 3", "shells");
+        settings.Add("shell4", false, "Shell N° 4", "shells");
+        settings.Add("shell5", false, "Shell N° 5", "shells");
+        settings.Add("shell6", false, "Shell N° 6", "shells");
+        settings.Add("shell7", false, "Shell N° 7", "shells");
+        settings.Add("shell8", false, "Shell N° 8", "shells");
+        settings.Add("shell9", false, "Shell N° 9", "shells");
+        settings.Add("shell10", false, "Shell N° 10", "shells");
+        settings.Add("shell11", false, "Shell N° 11", "shells");
+        settings.Add("shell12", false, "Shell N° 12", "shells");
+        settings.Add("shell13", false, "Shell N° 13", "shells");
+        settings.Add("shell14", false, "Shell N° 14", "shells");
+        settings.Add("shell15", false, "Shell N° 15", "shells");
+    settings.Add("sandq", false, "Splitting upon specified Save & Quit locations:", "splits");
+        settings.Add("Center", false, "Visitor Center", "sandq");
+        settings.Add("Frost", false, "Frost Zone", "sandq");
+        settings.Add("Outlook", false, "Outlook", "sandq");
+        settings.Add("May", false, "Aunt May", "sandq");
+    settings.Add("summit", true, "Splitting upon reaching the summit", "splits");
 
     vars.createShellsWatcher = (Action<Process>) ((proc) => {
         // scan target to get a pointer to the game's GlobalData singleton class
@@ -165,7 +164,11 @@ update {
 }
 
 start {
-    return (old.startend == 2 && current.startend == 0 && current.igt < 0.1f);
+    if (old.startend == 2 && current.startend == 0 && current.igt < 0.1f) {
+        vars.lastFeatherCount = 0;
+        vars.reachedSummit = false;
+        return true;
+    }
 }
 
 split {
@@ -208,12 +211,7 @@ split {
 }
 
 reset {
-    if (old.startend == 0 && current.startend == 2 && current.igt < 0.1f)
-    {
-        vars.lastFeatherCount = 0;
-        vars.reachedSummit = false;
-        return true;
-    }
+    return old.startend == 0 && current.startend == 2 && current.igt < 0.1f;
 }
 
 isLoading {
