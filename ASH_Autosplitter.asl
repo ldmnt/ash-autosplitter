@@ -24,7 +24,7 @@ startup {
     vars.SUMMIT = new float[3] { 399.8647f, 606.32938f, 795.0003f };
     vars.SUMMIT_SIZE = new float[3] { 7.326245f, 7.15712f, 4.547681f };
 
-    settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:", "splits");
+    settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:");
         settings.Add("feather1", true, "Feather N° 1", "feathers");
         settings.Add("feather2", true, "Feather N° 2", "feathers");
         settings.Add("feather3", true, "Feather N° 3", "feathers");
@@ -45,7 +45,7 @@ startup {
         settings.Add("feather18", true, "Feather N° 18", "feathers");
         settings.Add("feather19", true, "Feather N° 19", "feathers");
         settings.Add("feather20", true, "Feather N° 20", "feathers");
-    settings.Add("shells", false, "Splitting upon collecting a specified number of shells, regardless of order:", "splits");
+    settings.Add("shells", false, "Splitting upon collecting a specified number of shells, regardless of order:");
         settings.Add("shell1", false, "Shell N° 1", "shells");
         settings.Add("shell2", false, "Shell N° 2", "shells");
         settings.Add("shell3", false, "Shell N° 3", "shells");
@@ -61,12 +61,12 @@ startup {
         settings.Add("shell13", false, "Shell N° 13", "shells");
         settings.Add("shell14", false, "Shell N° 14", "shells");
         settings.Add("shell15", false, "Shell N° 15", "shells");
-    settings.Add("sandq", false, "Splitting upon specified Save & Quit locations:", "splits");
+    settings.Add("sandq", false, "Splitting upon specified Save & Quit locations:");
         settings.Add("Center", false, "Visitor Center", "sandq");
         settings.Add("Frost", false, "Frost Zone", "sandq");
         settings.Add("Outlook", false, "Outlook", "sandq");
         settings.Add("May", false, "Aunt May", "sandq");
-    settings.Add("summit", true, "Splitting upon reaching the summit", "splits");
+    settings.Add("summit", true, "Splitting upon reaching the summit");
 
     vars.createShellsWatcher = (Action<Process>) ((proc) => {
         // scan target to get a pointer to the game's GlobalData singleton class
