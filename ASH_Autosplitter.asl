@@ -1,6 +1,6 @@
 state("AShortHike") {
     int feather          : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x234;
-    // int silverFeathers: "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x270;
+    int silverFeathers   : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x270;
     byte12 position      : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
     // int screen        : "UnityPlayer.dll", 0x105C480, 0x3C;
     int startend         : "UnityPlayer.dll", 0x105C800, 0x12C;
@@ -13,7 +13,8 @@ startup {
         { "Outlook", new float[3] { 266.04f, 253.27f, 347.58f } },
         { "Center", new float[3] { 157.98f, 32.20f, 122.22f } },
         { "Frost", new float[3] { 253.58f, 319.51f, 587.67f } },
-        { "May", new float[3] { 611.85f, 27.89f, 299.51f } }
+        { "May", new float[3] { 611.85f, 27.89f, 299.51f } },
+        { "Frog", new float[3] { 340.32f, 22.49f, 73.08f } }
     };
 
     // player collision capsule
@@ -66,7 +67,9 @@ startup {
         settings.Add("Frost", false, "Frost Zone", "sandq");
         settings.Add("Outlook", false, "Outlook", "sandq");
         settings.Add("May", false, "Aunt May", "sandq");
+        settings.Add("Frog", false, "Sandcastles Frog", "sandq");
     settings.Add("summit", true, "Splitting upon reaching the summit");
+    settings.Add("silverFeather", false, "Splitting upon collecting a silver feather");
 
     vars.createShellsWatcher = (Action<Process>) ((proc) => {
         // scan target to get a pointer to the game's GlobalData singleton class
@@ -146,6 +149,7 @@ init {
     vars.lastValidIGT = 0;
     vars.position = new float[3] { 0.0f, 0.0f, 0.0f };
     vars.lastFeatherCount = 0;
+    vars.lastSilverFeatherCount = 0;
     vars.reachedSummit = false;
     vars.shells = null;
     vars.shellsInitialized = false;
@@ -166,6 +170,7 @@ update {
 start {
     if (old.startend == 2 && current.startend == 0 && current.igt < 0.1f) {
         vars.lastFeatherCount = 0;
+        vars.lastSilverFeatherCount = 0;
         vars.reachedSummit = false;
         return true;
     }
@@ -203,6 +208,11 @@ split {
     if (vars.lastFeatherCount == current.feather - 1) {
         vars.lastFeatherCount = current.feather;
         return settings["feather" + current.feather.ToString()];
+    }
+
+    if (vars.lastSilverFeatherCount == current.silverFeathers - 1) {
+        vars.lastSilverFeatherCount = current.silverFeathers;
+        return settings["silverFeather"];
     }
 
     return
