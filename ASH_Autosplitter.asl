@@ -1,10 +1,10 @@
 state("AShortHike") {
-    int feather          : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x234;
-    int silverFeathers   : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x270;
-    byte12 position      : "UnityPlayer.dll", 0x109AC54, 0x38, 0x34, 0x3C, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
-    // int screen        : "UnityPlayer.dll", 0x105C480, 0x3C;
-    int startend         : "UnityPlayer.dll", 0x105C800, 0x12C;
-    float igt            : "UnityPlayer.dll", 0x10B6780, 0x4, 0x4, 0x14, 0x0, 0x48, 0x18, 0x28;
+    int goldFeather   : "UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x254;
+    int silverFeather : "UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x290;
+    byte12 position   : "UnityPlayer.dll", 0x1293454, 0x25C, 0x198, 0x5FC, 0x414, 0x78;
+    int startEnd      : "UnityPlayer.dll", 0x1260480, 0x12C;
+    float igt         : "UnityPlayer.dll", 0x12827F0, 0x54, 0xBC, 0x98, 0xD0, 0x40, 0x30;
+    // int screen     : "UnityPlayer.dll", 0x105C480, 0x3C;
 }
 
 startup {
@@ -26,26 +26,26 @@ startup {
     vars.SUMMIT_SIZE = new float[3] { 7.326245f, 7.15712f, 4.547681f };
 
     settings.Add("feathers", true, "Splitting upon collecting a specified number of feathers, regardless of order:");
-        settings.Add("feather1", true, "Feather N° 1", "feathers");
-        settings.Add("feather2", true, "Feather N° 2", "feathers");
-        settings.Add("feather3", true, "Feather N° 3", "feathers");
-        settings.Add("feather4", true, "Feather N° 4", "feathers");
-        settings.Add("feather5", true, "Feather N° 5", "feathers");
-        settings.Add("feather6", true, "Feather N° 6", "feathers");
-        settings.Add("feather7", true, "Feather N° 7", "feathers");
-        settings.Add("feather8", true, "Feather N° 8", "feathers");
-        settings.Add("feather9", true, "Feather N° 9", "feathers");
-        settings.Add("feather10", true, "Feather N° 10", "feathers");
-        settings.Add("feather11", true, "Feather N° 11", "feathers");
-        settings.Add("feather12", true, "Feather N° 12", "feathers");
-        settings.Add("feather13", true, "Feather N° 13", "feathers");
-        settings.Add("feather14", true, "Feather N° 14", "feathers");
-        settings.Add("feather15", true, "Feather N° 15", "feathers");
-        settings.Add("feather16", true, "Feather N° 16", "feathers");
-        settings.Add("feather17", true, "Feather N° 17", "feathers");
-        settings.Add("feather18", true, "Feather N° 18", "feathers");
-        settings.Add("feather19", true, "Feather N° 19", "feathers");
-        settings.Add("feather20", true, "Feather N° 20", "feathers");
+        settings.Add("goldFeather1", true, "Feather N° 1", "feathers");
+        settings.Add("goldFeather2", true, "Feather N° 2", "feathers");
+        settings.Add("goldFeather3", true, "Feather N° 3", "feathers");
+        settings.Add("goldFeather4", true, "Feather N° 4", "feathers");
+        settings.Add("goldFeather5", true, "Feather N° 5", "feathers");
+        settings.Add("goldFeather6", true, "Feather N° 6", "feathers");
+        settings.Add("goldFeather7", true, "Feather N° 7", "feathers");
+        settings.Add("goldFeather8", true, "Feather N° 8", "feathers");
+        settings.Add("goldFeather9", true, "Feather N° 9", "feathers");
+        settings.Add("goldFeather10", true, "Feather N° 10", "feathers");
+        settings.Add("goldFeather11", true, "Feather N° 11", "feathers");
+        settings.Add("goldFeather12", true, "Feather N° 12", "feathers");
+        settings.Add("goldFeather13", true, "Feather N° 13", "feathers");
+        settings.Add("goldFeather14", true, "Feather N° 14", "feathers");
+        settings.Add("goldFeather15", true, "Feather N° 15", "feathers");
+        settings.Add("goldFeather16", true, "Feather N° 16", "feathers");
+        settings.Add("goldFeather17", true, "Feather N° 17", "feathers");
+        settings.Add("goldFeather18", true, "Feather N° 18", "feathers");
+        settings.Add("goldFeather19", true, "Feather N° 19", "feathers");
+        settings.Add("goldFeather20", true, "Feather N° 20", "feathers");
     settings.Add("shells", false, "Splitting upon collecting a specified number of shells, regardless of order:");
         settings.Add("shell1", false, "Shell N° 1", "shells");
         settings.Add("shell2", false, "Shell N° 2", "shells");
@@ -79,20 +79,15 @@ startup {
         ThreadStart startScan = new ThreadStart(() => {
             print("scan started");
             var ptr = IntPtr.Zero;
-            foreach (var page in proc.MemoryPages(true))
-            {
+            foreach (var page in proc.MemoryPages(true)) {
                 var scanner = new SignatureScanner(proc, page.BaseAddress, (int)page.RegionSize);
-                if ((ptr = scanner.Scan(sigScanTarget)) != IntPtr.Zero)
-                {
+                if ((ptr = scanner.Scan(sigScanTarget)) != IntPtr.Zero) {
                     break;
                 }
             }
-            if (ptr == IntPtr.Zero)
-            {
+            if (ptr == IntPtr.Zero) {
                 print("scan failed, cannot track shells");
-            }
-            else
-            {
+            } else {
                 print("scan finished - base address found : 0x" + ptr.ToString("x"));
                 vars.shells = new MemoryWatcher<int>(new DeepPointer(ptr, 0x24, 0x4, 0x0, 0xC, 0xC, 0xC, 0xC, 0x2C));
             }
@@ -104,8 +99,7 @@ startup {
 
     vars.squaredDistance = (Func<float[], float[], float>) ((v1, v2) => {
         float res = 0;
-        for (int i = 0; i < v1.Length; i++)
-        {
+        for (int i = 0; i < v1.Length; i++) {
             float diff = v2[i] - v1[i];
             res += diff * diff;
         }
@@ -131,14 +125,10 @@ startup {
     });
 
     vars.copyArray = (Action<Array, Array>) ((src, dst) => {
-        if (src != null)
-        {
+        if (src != null) {
             Buffer.BlockCopy(src, 0, dst, 0, 12);
-        }
-        else
-        {
-            for (int i = 0; i < 3; i++)
-            {
+        } else {
+            for (int i = 0; i < 3; i++) {
                 dst.SetValue(0.0f, i);
             }
         }
@@ -148,7 +138,7 @@ startup {
 init {
     vars.lastValidIGT = 0;
     vars.position = new float[3] { 0.0f, 0.0f, 0.0f };
-    vars.lastFeatherCount = 0;
+    vars.lastGoldFeatherCount = 0;
     vars.lastSilverFeatherCount = 0;
     vars.reachedSummit = false;
     vars.shells = null;
@@ -158,18 +148,17 @@ init {
 update {
     vars.copyArray(current.position, vars.position);
 
-    if (!vars.shellsInitialized && vars.position[0] > 0)
-    {
+    if (!vars.shellsInitialized && vars.position[0] > 0) {
         vars.shellsInitialized = true;
         vars.createShellsWatcher(game);
     }
 
-    if (vars.shells != null) { vars.shells.Update(game); }
+    if (vars.shells != null) vars.shells.Update(game);
 }
 
 start {
-    if (old.startend == 2 && current.startend == 0 && current.igt < 0.1f) {
-        vars.lastFeatherCount = 0;
+    if (old.startEnd == 2 && current.startEnd == 0 && current.igt < 0.1f) {
+        vars.lastGoldFeatherCount = 0;
         vars.lastSilverFeatherCount = 0;
         vars.reachedSummit = false;
         return true;
@@ -177,14 +166,11 @@ start {
 }
 
 split {
-    if (old.position == null && current.position != null)
-    {
-        foreach (var keyValue in vars.SAVE_AND_QUIT_SPLITS)
-        {
+    if (old.position == null && current.position != null) {
+        foreach (var keyValue in vars.SAVE_AND_QUIT_SPLITS) {
             bool splitEnabled = settings[keyValue.Key];
             float[] location = keyValue.Value;
-            if (splitEnabled && vars.squaredDistance(vars.position, location) < 10.0f)
-            {
+            if (splitEnabled && vars.squaredDistance(vars.position, location) < 10.0f) {
                 return true;
             }
         }
@@ -199,15 +185,14 @@ split {
             vars.SUMMIT[0], vars.SUMMIT[2], vars.SUMMIT_SIZE[0], vars.SUMMIT_SIZE[2]
         );
        
-    if (isAtSummit && !vars.reachedSummit && settings["summit"])
-    {
+    if (isAtSummit && !vars.reachedSummit && settings["summit"]) {
         vars.reachedSummit = true;
         return true;
     }
 
-    if (vars.lastFeatherCount == current.feather - 1) {
-        vars.lastFeatherCount = current.feather;
-        return settings["feather" + current.feather.ToString()];
+    if (vars.lastGoldFeatherCount == current.goldFeather - 1) {
+        vars.lastGoldFeatherCount = current.goldFeather;
+        return settings["goldFeather" + current.goldFeather.ToString()];
     }
 
     if (vars.lastSilverFeatherCount == current.silverFeathers - 1) {
@@ -216,12 +201,12 @@ split {
     }
 
     return
-        (old.startend == 0 && current.startend == 2 && current.igt > 0) ||
-        (vars.shells != null && vars.shells.Changed && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]); 
+        old.startEnd == 0 && current.startEnd == 2 && current.igt > 0.1f ||
+        vars.shells != null && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]; 
 }
 
 reset {
-    return old.startend == 0 && current.startend == 2 && current.igt < 0.1f;
+    return old.startEnd == 0 && current.startEnd == 2 && current.igt < 0.1f;
 }
 
 isLoading {
@@ -229,13 +214,10 @@ isLoading {
 }
 
 gameTime {
-    if (current.igt != 0)
-    {
+    if (current.igt != 0) {
         vars.lastValidIGT = current.igt;
         return TimeSpan.FromSeconds(current.igt);
-    }
-    else
-    {
+    } else {
         return TimeSpan.FromSeconds(vars.lastValidIGT);
     }
 }
