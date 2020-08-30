@@ -195,8 +195,8 @@ split {
         return settings["goldFeather" + current.goldFeather.ToString()];
     }
 
-    if (vars.lastSilverFeatherCount == current.silverFeathers - 1) {
-        vars.lastSilverFeatherCount = current.silverFeathers;
+    if (vars.lastSilverFeatherCount == current.silverFeather - 1) {
+        vars.lastSilverFeatherCount = current.silverFeather;
         return settings["silverFeather"];
     }
 
@@ -214,7 +214,7 @@ isLoading {
 }
 
 gameTime {
-    if (current.igt != 0) {
+    if (current.igt > 0.001f) {
         vars.lastValidIGT = current.igt;
         return TimeSpan.FromSeconds(current.igt);
     } else {
