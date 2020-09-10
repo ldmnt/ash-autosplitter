@@ -1,7 +1,6 @@
 state("AShortHike") {
     int goldFeather   : "UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x254;
     int silverFeather : "UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x290;
-    byte12 position   : "UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x18, 0x8, 0x20, 0x10, 0x30;
     int startEnd      : "UnityPlayer.dll", 0x1260480, 0x12C;
     float igt         : "UnityPlayer.dll", 0x12B1560, 0x4, 0x4, 0x14, 0x0, 0x8, 0x18, 0x30;
     // int screen     : "UnityPlayer.dll", 0x105C480, 0x3C;
@@ -143,10 +142,23 @@ init {
     vars.reachedSummit = false;
     vars.shells = null;
     vars.shellsInitialized = false;
+
+    vars.positionOffset = new MemoryWatcher<int>(new DeepPointer("UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x24));
+    vars.positionPointer = new DeepPointer("UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x20, 0x10, 0x30);
 }
 
 update {
-    vars.copyArray(current.position, vars.position);
+    vars.positionOffset.Update(game);
+    if (vars.positionOffset.Current != vars.positionOffset.Old) {
+        print("positionOffset : " + vars.positionOffset.Current.ToString());
+        vars.positionPointer = new DeepPointer("UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x20, 0x10, 48 * vars.positionOffset.Current);
+    }
+
+    byte[] position = new byte[12];
+    current.nullPosition = !vars.positionPointer.DerefBytes(game, 12, out position);
+    if (!current.nullPosition) {
+        vars.copyArray(position, vars.position);
+    }
 
     if (!vars.shellsInitialized && vars.position[0] > 0) {
         vars.shellsInitialized = true;
@@ -166,7 +178,7 @@ start {
 }
 
 split {
-    if (old.position == null && current.position != null) {
+    if (((IDictionary<String, object>)old).ContainsKey("nullPosition") && old.nullPosition && !current.nullPosition) {
         foreach (var keyValue in vars.SAVE_AND_QUIT_SPLITS) {
             bool splitEnabled = settings[keyValue.Key];
             float[] location = keyValue.Value;
