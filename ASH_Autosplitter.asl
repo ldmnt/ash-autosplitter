@@ -142,6 +142,7 @@ init {
     vars.reachedSummit = false;
     vars.shells = null;
     vars.shellsInitialized = false;
+    vars.coinCooldown = 0.0f;
 
     vars.positionOffset = new MemoryWatcher<int>(new DeepPointer("UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x24));
     vars.positionPointer = new DeepPointer("UnityPlayer.dll", 0x1293454, 0x64, 0x54, 0x44, 0x8, 0x1C, 0x1C, 0x4, 0x20, 0x10, 0x30);
@@ -166,6 +167,11 @@ update {
     }
 
     if (vars.shells != null) vars.shells.Update(game);
+
+    if (vars.coinCooldown > 0.0f)
+    {
+        vars.coinCooldown -= current.igt - old.igt;
+    }
 }
 
 start {
@@ -173,6 +179,7 @@ start {
         vars.lastGoldFeatherCount = 0;
         vars.lastSilverFeatherCount = 0;
         vars.reachedSummit = false;
+        vars.coinCooldown = 0.0f;
         return true;
     }
 }
@@ -212,9 +219,14 @@ split {
         return settings["silverFeather"];
     }
 
+    if (vars.shells != null && vars.shells.Old < vars.shells.Current && vars.coinCooldown < 0.1f)
+    {
+        vars.coinCooldown = 3;
+        return true;
+    }
+
     return
-        old.startEnd == 0 && current.startEnd == 2 && current.igt > 0.1f ||
-        vars.shells != null && vars.shells.Old < vars.shells.Current && settings["shell" + vars.shells.Current.ToString()]; 
+        old.startEnd == 0 && current.startEnd == 2 && current.igt > 0.1f;
 }
 
 reset {
