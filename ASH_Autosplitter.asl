@@ -207,7 +207,7 @@ init {
 		string recentEntry = memory.ReadString(name, 128);
 		//print("\n" + recentEntry);
 
-		//if (vars.savedIGT == null && typeIndex == 2) vars.updIGTWatcher();
+		if (vars.savedIGT == null && typeIndex == 2) vars.updIGTWatcher();
 
 		return settings.ContainsKey(recentEntry) && settings[recentEntry];
 	});
