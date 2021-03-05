@@ -207,7 +207,7 @@ init {
 		string recentEntry = memory.ReadString(name, 128);
 		//print("\n" + recentEntry);
 
-		if (vars.savedIGT == null && typeIndex == 2) vars.updIGTWatcher();
+		//if (vars.savedIGT == null && typeIndex == 2) vars.updIGTWatcher();
 
 		return settings.ContainsKey(recentEntry) && settings[recentEntry];
 	});
@@ -221,8 +221,9 @@ update {
 	if (vars.savedIGT != null) vars.savedIGT.Update(game);
 	current.isPlaying = current.levelControllerAddr > 0; // Simply for readability.
 
-	// Currently, only booleans are important to us. Since this may change in the future, I've kept it like this.
-	current.allCounts = new int[] { current.boolsCount/*, current.intsCount, current.floatsCount, current.stringsCount*/ };
+	// Currently, only booleans are important to us. Since we also need to update "SpeedRunTime",
+	// we do also need to keep track of floats, however.
+	current.allCounts = new int[] { current.boolsCount, current.intsCount, current.floatsCount/*, current.stringsCount*/ };
 }
 
 start {
