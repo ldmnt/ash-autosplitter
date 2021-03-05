@@ -118,12 +118,12 @@ startup {
 
 	// Various save & quit target locations, partly by Hambinou.
 	vars.saveAndQuitLocations = new Dictionary<string, float[]>() {
-		{ "Beach Hut", new float[] { 471.97f,  25.90f, 114.54f } },
-		{      "Frog", new float[] { 340.32f,  22.49f,  73.08f } },
-		{    "Center", new float[] { 157.98f,  32.20f, 122.22f } },
-		{     "Frost", new float[] { 253.58f, 319.51f, 587.67f } },
-		{   "Outlook", new float[] { 266.04f, 253.27f, 347.58f } },
-		{  "Aunt May", new float[] { 611.85f,  27.89f, 299.51f } }
+		{ "Beach Hut", new[] { 471.97f,  25.90f, 114.54f } },
+		{      "Frog", new[] { 340.32f,  22.49f,  73.08f } },
+		{    "Center", new[] { 157.98f,  32.20f, 122.22f } },
+		{     "Frost", new[] { 253.58f, 319.51f, 587.67f } },
+		{   "Outlook", new[] { 266.04f, 253.27f, 347.58f } },
+		{  "Aunt May", new[] { 611.85f,  27.89f, 299.51f } }
 	};
 
 	// Add locations to settings.
@@ -151,7 +151,7 @@ startup {
 			{    "College Kid", Tuple.Create(new[] { 255.85f, 267.25f, 567.41f }, 0) },
 			{         "Artist", Tuple.Create(new[] { 193.28f,  32.26f,  98.83f }, 0) },
 			{       "Aunt May", Tuple.Create(new[] { 653.73f,  20.41f, 331.81f }, 0) },
-			{           "Goat", Tuple.Create(new[] { 277.14f,  11.94f, 139.97f }, 0) },
+			{           "Goat", Tuple.Create(new[] { 277.14f,  11.94f, 139.97f }, 0) }
 		};
 	});
 	timer.OnStart += vars.timerStart;
