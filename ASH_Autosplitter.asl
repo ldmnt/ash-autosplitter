@@ -228,7 +228,7 @@ update {
 
 start {
 	// If the player is on a fresh file and igt increases from 0.
-	return current.boolsCount == 8 && current.floatsCount == 0 && current.isPlaying && old.igt == 0.000f && current.igt > 0f;
+	return current.floatsCount == 0 && current.isPlaying && old.igt == 0.000f && current.igt > 0f;
 }
 
 split {
