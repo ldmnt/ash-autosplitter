@@ -251,7 +251,8 @@ split {
 	// (Progress is tracked by the dialog following the unlock. I'd like to avoid splitting on that,
 	// as it does not represent the actual acquisition of the item, even if the player may mash.)
 	// When the player's feather count increases, their position is compared to any of those within
-	// vars.positionBasedFeathers. If the player is within 100 units of one of those,
+	// vars.positionBasedFeathers. If the player is within 100 units of one of those, increase
+	// the count and split if the setting is checked accordingly.
 	if (old.gFeathers < current.gFeathers || old.sFeathers < current.sFeathers) {
 		List<Tuple<string, float[], int>> list = vars.positionBasedFeathers;
 		float[] playerPos = new float[] { current.xPos, current.yPos, current.zPos };
