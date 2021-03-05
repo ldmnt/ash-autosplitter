@@ -159,6 +159,8 @@ startup {
 	// vars.positionBasedFeathers doesn't exist until the EventHandler's code has run at least once.
 	vars.timerStart(null, null);
 	vars.stopWatch = new Stopwatch();
+
+	timer.CurrentTimingMethod = TimingMethod.GameTime;
 }
 
 init {
