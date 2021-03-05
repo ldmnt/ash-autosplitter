@@ -16,17 +16,17 @@ state("AShortHike") {
 
 startup {
 	object[,] settingsArray = {
-		{ "Golden Feathers", "VisitorCenterFeather1",                      false, "Visitor Ranger 1" },
-		{ "Golden Feathers", "VisitorCenterFeather2",                      false, "Visitor Ranger 2" },
+		{ "Golden Feathers", "Visitor Center Feather 1",                   false, "Visitor Ranger 1" },
+		{ "Golden Feathers", "Visitor Center Feather 2",                   false, "Visitor Ranger 2" },
 		{ "Golden Feathers", "COLLECTED_0956cf5d8586a8c45a503e8b0dc7cc83", false, "Visitor Center Rock" },
 		{ "Golden Feathers", "COLLECTED_633da0aac2fa298499319db80b2028ec", false, "Sand Castle" },
 		{ "Golden Feathers", "COLLECTED_84012f6bc2a426549be0af950cdcabec",  true, "Blackwood Forest" },
 		{ "Golden Feathers", "Opened_3e81f8b34ebda554b89075f6a81e828c",    false, "\'In Her Shadow\' Treasure" },
 		{ "Golden Feathers", "Opened_1dae0d07a28e78b4fa45a6f48bd3445d",    false, "Lighthouse" },
-		{ "Golden Feathers", "CollegeKidFeather1",                         false, "College Kid 1" },
-		{ "Golden Feathers", "CollegeKidFeather2",                         false, "College Kid 2" },
-		{ "Golden Feathers", "CollegeKidFeather3",                         false, "College Kid 3" },
-		{ "Golden Feathers", "CollegeKidFeather4",                         false, "College Kid 4" },
+		{ "Golden Feathers", "College Kid Feather 1",                      false, "College Kid 1" },
+		{ "Golden Feathers", "College Kid Feather 2",                      false, "College Kid 2" },
+		{ "Golden Feathers", "College Kid Feather 3",                      false, "College Kid 3" },
+		{ "Golden Feathers", "College Kid Feather 4",                      false, "College Kid 4" },
 		{ "Golden Feathers", "$GotVolleyPrize",                            false, "Beachstickball" },
 		{ "Golden Feathers", "Opened_204fedd6851cf1b499e8a2254ce575ae",    false, "North Cliff" },
 		{ "Golden Feathers", "$BeatFirstBoatTime",                         false, "Boat Challenge" },
@@ -34,11 +34,11 @@ startup {
 		{ "Golden Feathers", "Opened_3347701a297401440b9483786d455244",    false, "Stone Tower" },
 		{ "Golden Feathers", "COLLECTED_46ee70a4d733fdb49a823a795627075f", false, "Outlook Cliff" },
 		{ "Golden Feathers", "Opened_c9b2b58930bcd114fb6eaa0cc25e5335",    false, "Outlook" },
-		{ "Golden Feathers", "ArtistFeather1",                             false, "Artist" },
-		{ "Golden Feathers", "AuntFeather1",                               false, "Aunt May" },
+		{ "Golden Feathers", "Artist Feather 1",                           false, "Artist (beware Visitor Center Artist)" },
+		{ "Golden Feathers", "Aunt May Feather 1",                         false, "Aunt May" },
 
 		{ "Silver Feathers", "COLLECTED_f8641be47d809d14ab440622b012cff6", false, "Secret Island" },
-		{ "Silver Feathers", "WristwatchGoatFeather1",                     false, "Wristwatch Goat" },
+		{ "Silver Feathers", "Goat Feather 1",                             false, "Wristwatch Goat" },
 
 		{ "Shells", "IntCollect_b7628b60c3f46114490de46ef99a1971", false, "Start Beach" },
 		{ "Shells", "IntCollect_4861cc8aaaf748a488dafa544e9e6d79", false, "Beach Hut" },
@@ -119,11 +119,11 @@ startup {
 	// Various save & quit target locations, partly by Hambinou.
 	vars.saveAndQuitLocations = new Dictionary<string, float[]>() {
 		{ "Beach Hut", new float[] { 471.97f,  25.90f, 114.54f } },
-		{   "Outlook", new float[] { 266.04f, 253.27f, 347.58f } },
+		{      "Frog", new float[] { 340.32f,  22.49f,  73.08f } },
 		{    "Center", new float[] { 157.98f,  32.20f, 122.22f } },
 		{     "Frost", new float[] { 253.58f, 319.51f, 587.67f } },
-		{  "Aunt May", new float[] { 611.85f,  27.89f, 299.51f } },
-		{      "Frog", new float[] { 340.32f,  22.49f,  73.08f } }
+		{   "Outlook", new float[] { 266.04f, 253.27f, 347.58f } },
+		{  "Aunt May", new float[] { 611.85f,  27.89f, 299.51f } }
 	};
 
 	// Add locations to settings.
@@ -145,13 +145,13 @@ startup {
 	// that timer.OnStart is subscribed to.
 	vars.timerStart = (EventHandler) ((s, e) => {
 		vars.savedIGT = null;
-		vars.lastCounts = new int[4];
-		vars.positionBasedFeathers = new List<Tuple<string, float[], int>> {
-			Tuple.Create( "VisitorCenter", new float[] { 179.45f,  32.22f, 125.85f }, 0),
-			Tuple.Create(    "CollegeKid", new float[] { 255.85f, 267.25f, 567.41f }, 0),
-			Tuple.Create(        "Artist", new float[] { 193.28f,  32.26f,  98.83f }, 0),
-			Tuple.Create(          "Aunt", new float[] { 653.73f,  20.41f, 331.81f }, 0),
-			Tuple.Create("WristwatchGoat", new float[] { 277.14f,  11.94f, 139.97f }, 0)
+		vars.allCounts = new int[4];
+		vars.positionBasedFeathers = new Dictionary<string, Tuple<float[], int>> {
+			{ "Visitor Center", Tuple.Create(new[] { 179.45f,  32.22f, 125.85f }, 0) },
+			{    "College Kid", Tuple.Create(new[] { 255.85f, 267.25f, 567.41f }, 0) },
+			{         "Artist", Tuple.Create(new[] { 193.28f,  32.26f,  98.83f }, 0) },
+			{       "Aunt May", Tuple.Create(new[] { 653.73f,  20.41f, 331.81f }, 0) },
+			{           "Goat", Tuple.Create(new[] { 277.14f,  11.94f, 139.97f }, 0) },
 		};
 	});
 	timer.OnStart += vars.timerStart;
@@ -209,8 +209,6 @@ init {
 		string recentEntry = memory.ReadString(name, 128);
 		//print("\n" + recentEntry);
 
-		if (vars.savedIGT == null && typeIndex == 2) vars.updIGTWatcher();
-
 		return settings.ContainsKey(recentEntry) && settings[recentEntry];
 	});
 
@@ -220,12 +218,12 @@ init {
 }
 
 update {
+	if (old.floatsCount == 0 && current.floatsCount > 0) vars.updIGTWatcher();
 	if (vars.savedIGT != null) vars.savedIGT.Update(game);
 	current.isPlaying = current.levelControllerAddr > 0; // Simply for readability.
 
-	// Currently, only booleans are important to us. Since we also need to update "SpeedRunTime",
-	// we do also need to keep track of floats, however.
-	current.allCounts = new int[] { current.boolsCount, current.intsCount, current.floatsCount/*, current.stringsCount*/ };
+	// Currently, only booleans are important to us. Since this may change in the future, I've kept it like this.
+	current.allCounts = new int[] { current.boolsCount/*, current.intsCount, current.floatsCount, current.stringsCount*/ };
 }
 
 start {
@@ -244,7 +242,8 @@ split {
 		vars.stopWatch.Reset();
 		float[] playerPos = new float[] { current.xPos, current.yPos, current.zPos };
 		foreach (var location in vars.saveAndQuitLocations)
-			if (vars.squaredDistance(playerPos, location.Value) < 10.0f && settings[location.Key]) return true;
+			if (vars.squaredDistance(playerPos, location.Value) < 10.0f)
+				return settings[location.Key];
 	}
 
 	// Unfortunately, items acquired during dialog do not get written to any of the Dictionaries.
@@ -254,17 +253,17 @@ split {
 	// vars.positionBasedFeathers. If the player is within 100 units of one of those, increase
 	// the count and split if the setting is checked accordingly.
 	if (old.gFeathers < current.gFeathers || old.sFeathers < current.sFeathers) {
-		List<Tuple<string, float[], int>> list = vars.positionBasedFeathers;
 		float[] playerPos = new float[] { current.xPos, current.yPos, current.zPos };
-		try {
-			// This may throw an error when none of the items fulfill the lambda. Hence, try-catch.
-			int i = list.IndexOf(list.Where(x => vars.squaredDistance(playerPos, x.Item2) < 100.0f).First());
-			string id = list[i].Item1;
-			int newFeathers = list[i].Item3 + 1;
-
-			vars.positionBasedFeathers[i] = Tuple.Create(id, list[i].Item2, newFeathers);
-			if (settings[id + "Feather" + newFeathers]) return true;
-		} catch {}
+		string id;
+		int newFeathers;
+		foreach (var location in vars.positionBasedFeathers) {
+			if (vars.squaredDistance(playerPos, location.Value.Item1) < 100.0f) {
+				id = location.Key;
+				newFeathers = location.Value.Item2 + 1;
+				vars.positionBasedFeathers[id] = Tuple.Create(location.Value.Item1, newFeathers);
+				return settings[id + " Feather " + newFeathers];
+			}
+		}
 	}
 
 	// If the array changes (any index), loop over the indices and check if the entry increased
