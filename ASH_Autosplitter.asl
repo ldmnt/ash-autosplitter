@@ -146,12 +146,12 @@ startup {
 	vars.timerStart = (EventHandler) ((s, e) => {
 		vars.savedIGT = null;
 		vars.lastCounts = new int[4];
-		vars.positionBasedFeathers = new List<Tuple<string, float[], int, int>> {
-			Tuple.Create( "VisitorCenter", new float[] { 179.45f,  32.22f, 125.85f }, 0, 2),
-			Tuple.Create(    "CollegeKid", new float[] { 255.85f, 267.25f, 567.41f }, 0, 4),
-			Tuple.Create(        "Artist", new float[] { 193.28f,  32.26f,  98.83f }, 0, 1),
-			Tuple.Create(          "Aunt", new float[] { 653.73f,  20.41f, 331.81f }, 0, 1),
-			Tuple.Create("WristwatchGoat", new float[] { 277.14f,  11.94f, 139.97f }, 0, 1)
+		vars.positionBasedFeathers = new List<Tuple<string, float[], int>> {
+			Tuple.Create( "VisitorCenter", new float[] { 179.45f,  32.22f, 125.85f }, 0),
+			Tuple.Create(    "CollegeKid", new float[] { 255.85f, 267.25f, 567.41f }, 0),
+			Tuple.Create(        "Artist", new float[] { 193.28f,  32.26f,  98.83f }, 0),
+			Tuple.Create(          "Aunt", new float[] { 653.73f,  20.41f, 331.81f }, 0),
+			Tuple.Create("WristwatchGoat", new float[] { 277.14f,  11.94f, 139.97f }, 0)
 		};
 	});
 	timer.OnStart += vars.timerStart;
@@ -165,8 +165,6 @@ init {
 	// Global fields to track certain things.
 	current.isPlaying = false;
 	current.allCounts = new int[4];
-	vars.playerPos = new float[3];
-	vars.savedIGT = null;
 
 	// Function to return an IntPtr based off of fed information.
 	// Important here: Our data is stored in 4 Dictionaries within GlobalData.GameData.tags; bools, ints, floats, strings.
@@ -185,7 +183,7 @@ init {
 	});
 
 	// When the player quits to the menu, the igt pointer is lost and its value drops to 0.
-	// To combat this, we use an intry in GlobalData.GameData.tags.floats called "SpeedRunTime".
+	// To combat this, we use an entry in GlobalData.GameData.tags.floats called "SpeedRunTime".
 	// This time is updated when the game is saved. Is the player not in-game, use this value.
 	// To note: since the entry isn't always in the same spot (GlobalData.GameData.tags.floats starts out empty),
 	// we need to loop over all entries until we find the "SpeedRunTime" one.
@@ -225,9 +223,6 @@ update {
 
 	// Currently, only booleans are important to us. Since this may change in the future, I've kept it like this.
 	current.allCounts = new int[] { current.boolsCount/*, current.intsCount, current.floatsCount, current.stringsCount*/ };
-
-	// Updating this array each iteration may be bad practice. Helps readability.
-	vars.playerPos = new float[] { current.xPos, current.yPos, current.zPos };
 }
 
 start {
@@ -244,8 +239,9 @@ split {
 	if (!old.isPlaying && current.isPlaying) vars.stopWatch.Start();
 	if (vars.stopWatch.ElapsedMilliseconds >= 50) {
 		vars.stopWatch.Reset();
+		float[] playerPos = new float[] { current.xPos, current.yPos, current.zPos };
 		foreach (var location in vars.saveAndQuitLocations)
-			if (vars.squaredDistance(vars.playerPos, location.Value) < 10.0f && settings[location.Key]) return true;
+			if (vars.squaredDistance(playerPos, location.Value) < 10.0f && settings[location.Key]) return true;
 	}
 
 	// Unfortunately, items acquired during dialog do not get written to any of the Dictionaries.
@@ -254,18 +250,16 @@ split {
 	// When the player's feather count increases, their position is compared to any of those within
 	// vars.positionBasedFeathers. If the player is within 100 units of one of those,
 	if (old.gFeathers < current.gFeathers || old.sFeathers < current.sFeathers) {
-		List<Tuple<string, float[], int, int>> list = vars.positionBasedFeathers;
+		List<Tuple<string, float[], int>> list = vars.positionBasedFeathers;
+		float[] playerPos = new float[] { current.xPos, current.yPos, current.zPos };
 		try {
 			// This may throw an error when none of the items fulfill the lambda. Hence, try-catch.
-			int i = list.IndexOf(list.Where(x => vars.squaredDistance(vars.playerPos, x.Item2) < 100.0f).First());
+			int i = list.IndexOf(list.Where(x => vars.squaredDistance(playerPos, x.Item2) < 100.0f).First());
 			string id = list[i].Item1;
-			int prevFeathers = list[i].Item3;
-			int targetFeathers = list[i].Item4;
+			int newFeathers = list[i].Item3 + 1;
 
-			if (prevFeathers < targetFeathers) {
-				vars.positionBasedFeathers[i] = Tuple.Create(id, list[i].Item2, prevFeathers + 1, targetFeathers);
-				if (settings[id + "Feather" + (prevFeathers + 1)]) return true;
-			}
+			vars.positionBasedFeathers[i] = Tuple.Create(id, list[i].Item2, newFeathers);
+			if (settings[id + "Feather" + newFeathers]) return true;
 		} catch {}
 	}
 
