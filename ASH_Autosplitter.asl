@@ -1,8 +1,8 @@
 state("AShortHike") {
 	int boolsCount   : "UnityPlayer.dll", 0x12B8AA0, 0x54, 0x1958, 0xC, 0xC, 0x8, 0x20;
-	int intsCount    : "UnityPlayer.dll", 0x12B8AA0, 0x54, 0x1958, 0xC, 0xC, 0xC, 0x20;
+	//int intsCount    : "UnityPlayer.dll", 0x12B8AA0, 0x54, 0x1958, 0xC, 0xC, 0xC, 0x20;
 	int floatsCount  : "UnityPlayer.dll", 0x12B8AA0, 0x54, 0x1958, 0xC, 0xC, 0x10, 0x20;
-	int stringsCount : "UnityPlayer.dll", 0x12B8AA0, 0x54, 0x1958, 0xC, 0xC, 0x14, 0x20;
+	//int stringsCount : "UnityPlayer.dll", 0x12B8AA0, 0x54, 0x1958, 0xC, 0xC, 0x14, 0x20;
 
 	float xPos : "UnityPlayer.dll", 0x1256980, 0x0, 0x14, 0x4DC, 0x1C8, 0x74;
 	float yPos : "UnityPlayer.dll", 0x1256980, 0x0, 0x14, 0x4DC, 0x1C8, 0x78;
@@ -236,7 +236,7 @@ split {
 	if (!current.isPlaying) return;
 
 	// I've noticed some delay between this change and the position updating.
-	// I wait 0.005 seconds here to then do the regular distance check for S&Q locations.
+	// I wait 0.05 seconds here to then do the regular distance check for S&Q locations.
 	if (!old.isPlaying && current.isPlaying) vars.stopWatch.Start();
 	if (vars.stopWatch.ElapsedMilliseconds >= 50) {
 		vars.stopWatch.Reset();
