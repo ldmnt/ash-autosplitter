@@ -8,10 +8,10 @@ state("AShortHike") {
 	float yPos : "UnityPlayer.dll", 0x1256980, 0x0, 0x14, 0x4DC, 0x1C8, 0x78;
 	float zPos : "UnityPlayer.dll", 0x1256980, 0x0, 0x14, 0x4DC, 0x1C8, 0x7C;
 
-	int levelControllerAddr : "UnityPlayer.dll", 0x1284800, 0x4, 0x0, 0x2A8, 0x48, 0x18;
-	float igt               : "UnityPlayer.dll", 0x1284800, 0x4, 0x0, 0x2A8, 0x48, 0x18, 0x30;
-	int gFeathers           : "UnityPlayer.dll", 0x1284800, 0x4, 0x0, 0x2A8, 0x48, 0x18, 0x24, 0x254;
-	int sFeathers           : "UnityPlayer.dll", 0x1284800, 0x4, 0x0, 0x2A8, 0x48, 0x18, 0x24, 0x290;
+	int levelControllerAddr : "UnityPlayer.dll", 0x12B1560, 0x4, 0x4, 0x14, 0x0, 0x8, 0x18;
+	float igt               : "UnityPlayer.dll", 0x12B1560, 0x4, 0x4, 0x14, 0x0, 0x8, 0x18, 0x30;
+	int gFeathers           : "UnityPlayer.dll", 0x12B1560, 0x4, 0x4, 0x14, 0x0, 0x8, 0x18, 0x24, 0x254;
+	int sFeathers           : "UnityPlayer.dll", 0x12B1560, 0x4, 0x4, 0x14, 0x0, 0x8, 0x18, 0x24, 0x290;
 }
 
 startup {
@@ -116,12 +116,12 @@ startup {
 		settings.Add(id, state, description, parent);
 	}
 
-	// Various save & quit target locations, partly by Hambinou.
+	// Various save & quit target locations.
 	vars.saveAndQuitLocations = new Dictionary<string, float[]>() {
 		{ "Beach Hut", new[] { 471.97f,  25.90f, 114.54f } },
 		{      "Frog", new[] { 340.32f,  22.49f,  73.08f } },
 		{    "Center", new[] { 157.98f,  32.20f, 122.22f } },
-		{     "Frost", new[] { 253.58f, 319.51f, 587.67f } },
+		{     "Frost", new[] { 253.58f, 319.51f,  587.7f } },
 		{   "Outlook", new[] { 266.04f, 253.27f, 347.58f } },
 		{  "Aunt May", new[] { 611.85f,  27.89f, 299.51f } }
 	};
@@ -130,7 +130,7 @@ startup {
 	foreach (var loc in vars.saveAndQuitLocations)
 		settings.Add(loc.Key, false, loc.Key, "sq");
 
-	// By Hambinou. Used to calculate the distance between the player and a point in 3D space.
+	// Function used to calculate the distance between the player and a point in 3D space.
 	vars.squaredDistance = (Func<float[], float[], float>) ((v1, v2) => {
 		float res = 0;
 		for (int i = 0; i < v1.Length; ++i) {
@@ -228,7 +228,11 @@ update {
 
 start {
 	// If the player is on a fresh file and igt increases from 0.
-	return current.floatsCount == 0 && current.isPlaying && old.igt == 0.000f && current.igt > 0f;
+	// The game is a little bit inconsistent in what it sets the counts to, so I accomodate for multiple scenarios.
+	return
+		(current.boolsCount == 7 || current.boolsCount == 8) &&
+		(current.floatsCount == 0 || current.floatsCount == 1) &&
+		current.isPlaying && old.igt == 0.000f && current.igt > 0f;
 }
 
 split {
@@ -241,6 +245,7 @@ split {
 	if (vars.stopWatch.ElapsedMilliseconds >= 50) {
 		vars.stopWatch.Reset();
 		float[] playerPos = new float[] { current.xPos, current.yPos, current.zPos };
+		//print(String.Join(", ", playerPos));
 		foreach (var location in vars.saveAndQuitLocations)
 			if (vars.squaredDistance(playerPos, location.Value) < 10.0f)
 				return settings[location.Key];
