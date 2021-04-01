@@ -278,6 +278,8 @@ split
 				for (int i = count.Old; i <= count.Current - 1; ++i)
 				{
 					string entryInfo = vars.GetInfo(i, typeIndex);
+					if (String.IsNullOrEmpty(entryInfo)) continue;
+
 					print("Setting: " + entryInfo);
 					if (settings.ContainsKey(entryInfo) && settings[entryInfo]) return true;
 				}
