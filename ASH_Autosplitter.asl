@@ -223,8 +223,6 @@ update
 
 	current.PlayerPos = vars.PlayerInfo["position"].Current;
 
-	print(vars.PlayerInfo["igt"].Current.ToString("0.000"));
-
 	current.PosIsNull = new[] {
 		current.PlayerPos.X,
 		current.PlayerPos.Y,
