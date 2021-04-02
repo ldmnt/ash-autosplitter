@@ -136,7 +136,7 @@ init
 	{
 		Func<bool, bool, IntPtr> dPtr = (isKey, isString) => {
 			IntPtr ptr = IntPtr.Zero;
-			new DeepPointer(vars.DictsBase, 0x8 + 0x4 * typeIndex, 0xC, (isKey ? 0x18 : 0x1C) + 0x10 * entryIndex)
+			new DeepPointer(vars.DictsBase, 0xC, 0xC, 0x8 + 0x4 * typeIndex, 0xC, (isKey ? 0x18 : 0x1C) + 0x10 * entryIndex)
 			.DerefOffsets(game, out ptr);
 
 			if (isString) new DeepPointer(ptr, 0xC).DerefOffsets(game, out ptr);
@@ -184,15 +184,15 @@ init
 
 	if (vars.SigsFound)
 	{
-		new DeepPointer(Addresses[0], 0x990, 0x4DC, 0xC, 0xC).DerefOffsets(game, out Addresses[0]);
+		new DeepPointer(Addresses[0], 0x990, 0x4DC).DerefOffsets(game, out Addresses[0]);
 		vars.DictsBase = Addresses[0];
 
 		vars.DictCount = new MemoryWatcherList
 		{
-			new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0x8, 0x20)) { Name = "bools" },
-			//new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0xC, 0x20)) { Name = "ints" },
-			//new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0x10, 0x20)) { Name = "floats" },
-			//new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0x14, 0x20)) { Name = "strings" }
+			new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0xC, 0xC, 0x8, 0x20)) { Name = "bools" },
+			//new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0xC, 0xC, 0xC, 0x20)) { Name = "ints" },
+			//new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0xC, 0xC, 0x10, 0x20)) { Name = "floats" },
+			//new MemoryWatcher<int>(new DeepPointer(vars.DictsBase, 0xC, 0xC, 0x14, 0x20)) { Name = "strings" }
 		};
 
 		vars.PlayerInfo = new MemoryWatcherList
