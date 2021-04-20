@@ -161,7 +161,7 @@ init
 	SignatureScanner ModuleScanner = new SignatureScanner(game, Module.BaseAddress, Module.ModuleMemorySize);
 
 	SigScanTarget[] Signatures = {
-		new SigScanTarget(1, "A1 ?? ?? ?? ?? 68 A4 71"),
+		new SigScanTarget(2, "8B 35 ?? ?? ?? ?? 85 F6 75 ?? 68 ?? ?? ?? ?? 6A 18"),
 		new SigScanTarget(2, "8B 0D ?? ?? ?? ?? 8B 19 8B C3 8B 7B ?? 80 7F ?? 00 75 ?? 8B F1 90"),
 		new SigScanTarget(2, "8B 3D ?? ?? ?? ?? 33 D2 8B 4F")
 	};
@@ -184,7 +184,7 @@ init
 
 	if (vars.SigsFound)
 	{
-		new DeepPointer(Addresses[0], 0x30, 0xC0, 0xE5C, 0x38).DerefOffsets(game, out Addresses[0]);
+		new DeepPointer(Addresses[0], 0xEC4, 0x64, 0x1BC, 0xF8).DerefOffsets(game, out Addresses[0]);
 		vars.DictsBase = Addresses[0];
 
 		vars.DictCount = new MemoryWatcherList
