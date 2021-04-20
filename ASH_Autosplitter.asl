@@ -184,7 +184,7 @@ init
 
 	if (vars.SigsFound)
 	{
-		new DeepPointer(Addresses[0], 0x990, 0x4DC).DerefOffsets(game, out Addresses[0]);
+		new DeepPointer(Addresses[0], 0x30, 0xC0, 0xE5C, 0x38).DerefOffsets(game, out Addresses[0]);
 		vars.DictsBase = Addresses[0];
 
 		vars.DictCount = new MemoryWatcherList
