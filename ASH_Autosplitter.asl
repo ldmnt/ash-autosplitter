@@ -117,12 +117,19 @@ startup
 	foreach (var loc in vars.SnQLocations)
 		settings.Add(loc.Key, false, loc.Key, "sq");
 
-	#region XML Parsing
-	var MONO_VER = "mono_v2_x86";
-	var xml = System.Xml.Linq.XDocument.Parse(File.ReadAllText(@"Components\" + MONO_VER + ".xml")).Element("mono");
-	vars.Script = xml.Element("script").Elements().ToDictionary(e => e.Name, e => e.Value);
-	vars.Engine = xml.Element("engine").Elements().ToDictionary(e => e.Name, e => e.Elements().ToDictionary(_e => _e.Name, _e => Convert.ToInt32(_e.Value, 16)));
-	#endregion
+	using (var prov = new Microsoft.CSharp.CSharpCodeProvider())
+	{
+		var param = new System.CodeDom.Compiler.CompilerParameters
+		{
+			GenerateInMemory = true,
+			ReferencedAssemblies = { "LiveSplit.Core.dll", "System.dll", "System.Core.dll", "System.Xml.dll", "System.Xml.Linq.dll" }
+		};
+
+		string mono = File.ReadAllText(@"Components\mono.cs"), helpers = File.ReadAllText(@"Components\mono_helpers.cs");
+		var asm = prov.CompileAssemblyFromSource(param, mono, helpers);
+		foreach (var err in asm.Errors) vars.Log(err);
+		vars.Unity = Activator.CreateInstance(asm.CompiledAssembly.GetType("Mono.Unity"));
+	}
 }
 
 onStart
@@ -133,181 +140,65 @@ onStart
 
 init
 {
-	#region User Data
-	var mainImage = "Assembly-CSharp";
-	var classes = new Dictionary<string, int>
+	vars.Unity.OnLoadRetry = (Func<dynamic, bool>)(helper =>
 	{
-		{ "Singleton`1", 0 },
-		{ "GlobalData", 1 },
-		{ "GameData", 0 },
-		{ "Tags", 0 },
-		{ "AbstractServiceLocator`1", 0 },
-		{ "GameServiceLocator", 2 },
-		{ "LevelController", 0 },
-		{ "Player", 0 }
-	};
-	#endregion
-
-	vars.TaskCompleted = false;
-	vars.CancelSource = new CancellationTokenSource();
-	System.Threading.Tasks.Task.Run(async () =>
-	{ task_start: try {
-		var ptrSize = game.Is64Bit() ? 0x8 : 0x4;
-		var image = IntPtr.Zero;
-		var mono = new Dictionary<string, dynamic>();
-
-		#region Functions
 		Func<IntPtr, IntPtr> rp = ptr => game.ReadPointer(ptr);
 		Func<IntPtr, int> ri = ptr => game.ReadValue<int>(ptr);
-		Func<IntPtr, ushort> rus = ptr => game.ReadValue<ushort>(ptr);
 		Func<IntPtr, int, string> rs = (ptr, length) => game.ReadString(ptr, length, "");
 
-		Func<bool> getMainImage = () =>
-		{
-			var monoModule = game.ModulesWow64Safe().FirstOrDefault(m => m.ModuleName == vars.Script["Module"]);
-			if (monoModule == null) return false;
+		var gsl = helper.GetClass("Assembly-CSharp", 0x20000B0, 2);
+		if (gsl.Static == IntPtr.Zero) return false;
 
-			var loaded_images = new SignatureScanner(game, monoModule.BaseAddress, monoModule.ModuleMemorySize).Scan(
-				new SigScanTarget(int.Parse(vars.Script["SigOffset"]), vars.Script["SigPattern"])
-				{ OnFound = (p, _, ptr) => p.Is64Bit() ? ptr + 0x4 + p.ReadValue<int>(ptr) : p.ReadPointer(ptr) });
-			if (loaded_images == IntPtr.Zero) return false;
+		var gmd = helper.GetClass("Assembly-CSharp", 0x200047B);
+		var st = helper.GetClass("Assembly-CSharp", 0x2000036);
+		var gbd = helper.GetClass("Assembly-CSharp", 0x200008E, 1);
+		var tg = helper.GetClass("Assembly-CSharp", 0x2000091);
 
-			var table_size = ri(rp(loaded_images) + vars.Engine["GHashTable"]["table_size"]);
-			var table = rp(rp(loaded_images) + vars.Engine["GHashTable"]["table"]);
-			for (var i = 0; i < table_size; ++i)
-			{
-				if (rs(rp(rp(table + ptrSize * i) + vars.Engine["Slot"]["key"]), 32) != mainImage) continue;
-				image = rp(rp(table + ptrSize * i) + vars.Engine["Slot"]["value"]);
-				return true;
-			}
+		var asl = helper.GetClass("Assembly-CSharp", 0x2000031);
+		var lc = helper.GetClass("Assembly-CSharp", 0x20000CA);
+		var pl = helper.GetClass("Assembly-CSharp", 0x2000072);
 
-			return false;
-		};
-
-		Func<IntPtr, string, bool> getFields = (klass, class_name) =>
-		{
-			var field_count = ri(klass + vars.Engine["MonoClass"]["field_count"]);
-			var fields = rp(klass + vars.Engine["MonoClass"]["fields"]);
-			if (fields == IntPtr.Zero) return false;
-
-			vars.Log(string.Format("Found {0} at 0x{1}.", class_name, klass.ToString("X")));
-
-			for (var i = 0; i < field_count; ++i)
-			{
-				var field = fields + vars.Engine["MonoClassField"]["size"] * i;
-				var attrs = rus(rp(field + vars.Engine["MonoClassField"]["type"]) + vars.Engine["MonoType"]["attrs"]);
-				if ((attrs & vars.Engine["MonoType"]["const_attr"]) != 0) continue;
-
-				var isStatic = (attrs & vars.Engine["MonoType"]["static_attr"]) != 0;
-				var offset = ri(field + vars.Engine["MonoClassField"]["offset"]);
-				var field_name = ((string)rs(rp(field + vars.Engine["MonoClassField"]["name"]), 64)).Split('<', '>').FirstOrDefault(s => !string.IsNullOrEmpty(s));
-
-				mono[class_name][field_name] = offset;
-				vars.Log(string.Format("    {0,-6} {1,-32} // 0x{2:X3}", isStatic ? "static" : "", field_name + ";", offset));
-			}
-
-			return true;
-		};
-
-		Func<bool> getClasses = () =>
-		{
-			mono.Clear();
-			var class_count = ri(image + vars.Engine["MonoImage"]["class_cache_size"]);
-			var class_cache = rp(image + vars.Engine["MonoImage"]["class_cache_table"]);
-
-			for (var i = 0; i < class_count; ++i)
-			{
-				for (var klass = rp(class_cache + ptrSize * i); klass != IntPtr.Zero; klass = rp(klass + vars.Engine["MonoClass"]["next"]))
-				{
-					var class_name = rs(rp(klass + vars.Engine["MonoClass"]["name"]), 64);
-					if (class_name == "" || !classes.ContainsKey(class_name)) continue;
-
-					var parent = klass;
-					for (var j = 0; j < classes[class_name]; ++j)
-						parent = rp(parent + vars.Engine["MonoClass"]["parent"]);
-
-					if (parent == IntPtr.Zero) return false;
-
-					var vtable_size = ri(parent + vars.Engine["MonoClass"]["vtable_size"]);
-					var runtime_info = rp(rp(parent + vars.Engine["MonoClass"]["runtime_info"]) + vars.Engine["MonoClassRuntimeInfo"]["domain_vtables"]);
-					var data = rp(runtime_info + vars.Engine["MonoVTable"]["vtable"] + ptrSize * vtable_size);
-
-					mono[class_name] = new Dictionary<string, dynamic>();
-					mono[class_name]["static"] = data;
-
-					if (!getFields(klass, class_name)) return false;
-
-					if (mono.Count == classes.Count) return true;
-				}
-			}
-
-			return false;
-		};
-		#endregion
-
-		while (!getMainImage())
-		{
-			vars.Log("Main image not found.");
-			await System.Threading.Tasks.Task.Delay(1000, vars.CancelSource.Token);
-		}
-
-		while (!getClasses() || rp(rp(mono["GameServiceLocator"]["static"] + mono["Singleton`1"]["_instance"]) + mono["AbstractServiceLocator`1"]["cachedSceneServices"]) == IntPtr.Zero)
-		{
-			vars.Log("Not all classes found.");
-			await System.Threading.Tasks.Task.Delay(5000, vars.CancelSource.Token);
-		}
-
-		/*******************************/
-		current.Tags = new Dictionary<string, dynamic>
-		{
-			{ "bools", new Dictionary<string, bool>() },
-			{ "ints", new Dictionary<string, int>() },
-			{ "floats", new Dictionary<string, float>() },
-			{ "strings", new Dictionary<string, string>() }
-		};
+		var dct = helper.GetClass("mscorlib", "Dictionary`2");
 
 		vars.Player = new MemoryWatcherList
 		{
 			new MemoryWatcher<Vector3f>(new DeepPointer(
-				mono["GameServiceLocator"]["static"] + mono["Singleton`1"]["_instance"],
-				mono["AbstractServiceLocator`1"]["cachedSceneServices"],
-				0xC, 0x1C, // System.Collections.Generic.Dictionary<TKey, TValue>.entries[0].Value
-				mono["LevelController"]["player"],
-				mono["Player"]["startPosition"])) { Name = "startPos" },
+				gsl.Static + st["_instance"],
+				asl["cachedSceneServices"],
+				dct["entries"], 0x1C,
+				lc["player"], pl["startPosition"])) { Name = "startPos" },
 
 			new MemoryWatcher<float>(new DeepPointer(
-				mono["GameServiceLocator"]["static"] + mono["Singleton`1"]["_instance"],
-				mono["AbstractServiceLocator`1"]["cachedSceneServices"],
-				0xC, 0x1C,
-				mono["LevelController"]["elapsedGameTime"])) { Name = "igt" },
+				gsl.Static + st["_instance"],
+				asl["cachedSceneServices"],
+				dct["entries"], 0x1C,
+				lc["elapsedGameTime"])) { Name = "igt" },
 
 			new MemoryWatcher<int>(new DeepPointer(
-				mono["GameServiceLocator"]["static"] + mono["Singleton`1"]["_instance"],
-				mono["AbstractServiceLocator`1"]["cachedSceneServices"],
-				0xC, 0x1C,
-				mono["LevelController"]["player"],
-				mono["Player"]["_maxFeathers"])) { Name = "gFeathers" },
+				gsl.Static + st["_instance"],
+				asl["cachedSceneServices"],
+				dct["entries"], 0x1C,
+				lc["player"], pl["_maxFeathers"])) { Name = "gFeathers" },
 
 			new MemoryWatcher<int>(new DeepPointer(
-				mono["GameServiceLocator"]["static"] + mono["Singleton`1"]["_instance"],
-				mono["AbstractServiceLocator`1"]["cachedSceneServices"],
-				0xC, 0x1C,
-				mono["LevelController"]["player"],
-				mono["Player"]["silverFeathers"])) { Name = "sFeathers" }
+				gsl.Static + st["_instance"],
+				asl["cachedSceneServices"],
+				dct["entries"], 0x1C,
+				lc["player"], pl["silverFeathers"])) { Name = "sFeathers" }
 		};
 
 		vars.UpdateTags = (Func<List<string>>)(() =>
 		{
 			var changedTags = new List<string>();
 			var tags = rp(rp(rp(
-					mono["GlobalData"]["static"] + mono["Singleton`1"]["_instance"])
-					+ mono["GlobalData"]["_gameData"])
-					+ mono["GameData"]["tags"]
+					gbd.Static + st["_instance"])
+					+ gbd["_gameData"])
+					+ gmd["tags"]
 			);
 
 			foreach (var tag in new[] { "bools"/*, "ints"*/, "floats"/*, "strings"*/ })
 			{
-				var dict = rp(tags + mono["Tags"][tag]);
+				var dict = rp(tags + tg[tag]);
 				var count = ri(dict + 0x20);
 				var entries = rp(dict + 0xC);
 
@@ -333,16 +224,23 @@ init
 			return changedTags;
 		});
 
-		vars.TaskCompleted = true;
-		vars.Log("Mono task success.");
-	}
-	catch (ArgumentException) { goto task_start; }
-	catch (Exception ex) { vars.Log("Mono task abort!\n" + ex); }});
-} // init
+		return true;
+	});
+
+	current.Tags = new Dictionary<string, dynamic>
+	{
+		{ "bools", new Dictionary<string, bool>() },
+		{ "ints", new Dictionary<string, int>() },
+		{ "floats", new Dictionary<string, float>() },
+		{ "strings", new Dictionary<string, string>() }
+	};
+
+	vars.Unity.Load(game, 5000);
+}
 
 update
 {
-	if (!vars.TaskCompleted) return false;
+	if (!vars.Unity.Loaded) return false;
 
 	vars.Player.UpdateAll(game);
 }
@@ -387,10 +285,10 @@ isLoading
 
 exit
 {
-	vars.CancelSource.Cancel();
+	vars.Unity.Reset();
 }
 
 shutdown
 {
-	vars.CancelSource.Cancel();
+	vars.Unity.Reset();
 }
