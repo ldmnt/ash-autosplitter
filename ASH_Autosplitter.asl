@@ -128,7 +128,7 @@ startup
 		string mono = File.ReadAllText(@"Components\mono.cs"), helpers = File.ReadAllText(@"Components\mono_helpers.cs");
 		var asm = prov.CompileAssemblyFromSource(param, mono, helpers);
 		foreach (var err in asm.Errors) vars.Log(err);
-		vars.Unity = Activator.CreateInstance(asm.CompiledAssembly.GetType("Mono.Unity"));
+		vars.Unity = Activator.CreateInstance(asm.CompiledAssembly.GetType("Unity.Game"));
 	}
 }
 
