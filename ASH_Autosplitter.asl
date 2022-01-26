@@ -140,7 +140,7 @@ onStart
 
 init
 {
-	vars.Unity.OnLoadRetry = (Func<dynamic, bool>)(helper =>
+	vars.Unity.TryOnLoad = (Func<dynamic, bool>)(helper =>
 	{
 		Func<IntPtr, IntPtr> rp = ptr => game.ReadPointer(ptr);
 		Func<IntPtr, int> ri = ptr => game.ReadValue<int>(ptr);
