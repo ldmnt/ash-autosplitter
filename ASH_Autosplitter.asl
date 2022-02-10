@@ -117,7 +117,7 @@ startup
 	foreach (var loc in vars.SnQLocations)
 		settings.Add(loc.Key, false, loc.Key, "sq");
 
-	vars.Unity = Assembly.Load(File.ReadAllBytes(@"Components\ULibrary.dll")).CreateInstance("ULibrary.Unity");
+	vars.Unity = Assembly.Load(File.ReadAllBytes(@"Components\ULibrary")).CreateInstance("ULibrary.Unity");
 }
 
 onStart
