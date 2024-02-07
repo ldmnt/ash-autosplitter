@@ -1,0 +1,95 @@
+<Settings>
+  <Setting Label="Golden Feathers" State="true">
+    <Setting Label="Visitor Ranger 1"                      Id="$FeathersSold:1"                                 State="false" />
+    <Setting Label="Visitor Ranger 2"                      Id="$FeathersSold:2"                                 State="false" />
+    <Setting Label="Visitor Center Rock"                   Id="COLLECTED_0956cf5d8586a8c45a503e8b0dc7cc83:True" State="false" />
+    <Setting Label="Sand Castle"                           Id="COLLECTED_633da0aac2fa298499319db80b2028ec:True" State="false" />
+    <Setting Label="Blackwood Forest"                      Id="COLLECTED_84012f6bc2a426549be0af950cdcabec:True" State="true" />
+    <Setting Label="\'In Her Shadow\' Treasure"            Id="Opened_3e81f8b34ebda554b89075f6a81e828c:True"    State="false" />
+    <Setting Label="Lighthouse"                            Id="Opened_1dae0d07a28e78b4fa45a6f48bd3445d:True"    State="false" />
+    <Setting Label="College Kid 1"                         Id="$ToughBirdSales:1"                               State="false" />
+    <Setting Label="College Kid 2"                         Id="$ToughBirdSales:2"                               State="false" />
+    <Setting Label="College Kid 3"                         Id="$ToughBirdSales:3"                               State="false" />
+    <Setting Label="College Kid 4"                         Id="$ToughBirdSales:4"                               State="false" />
+    <Setting Label="Beachstickball"                        Id="$GotVolleyPrize:True"                            State="false" />
+    <Setting Label="North Cliff"                           Id="Opened_204fedd6851cf1b499e8a2254ce575ae:True"    State="false" />
+    <Setting Label="Boat Challenge"                        Id="$BeatFirstBoatTime:True"                         State="false" />
+    <Setting Label="Meteor Lake Cliff"                     Id="COLLECTED_b38bb329e8652fc40919e61d8d15b1c5:True" State="false" />
+    <Setting Label="Stone Tower"                           Id="Opened_3347701a297401440b9483786d455244:True"    State="false" />
+    <Setting Label="Outlook Cliff"                         Id="COLLECTED_46ee70a4d733fdb49a823a795627075f:True" State="false" />
+    <Setting Label="Outlook"                               Id="Opened_c9b2b58930bcd114fb6eaa0cc25e5335:True"    State="false" />
+    <Setting Label="Artist (beware Visitor Center Artist)" Id="Artist6Talk:True"                                State="false" />
+    <Setting Label="Aunt May"                              Id="$DeliveredNecklace:True"                         State="false" />
+  </Setting>
+  <Setting Label="Silver Feathers" State="false">
+    <Setting Label="Secret Island"   Id="COLLECTED_f8641be47d809d14ab440622b012cff6:True" State="false" />
+    <Setting Label="Wristwatch Goat" Id="$GoatWatchFound:True"                            State="false" />
+  </Setting>
+  <Setting Label="Shells" State="false">
+    <Setting Label="Start Beach"            Id="IntCollect_b7628b60c3f46114490de46ef99a1971:True" State="false" />
+    <Setting Label="Beach Hut"              Id="IntCollect_4861cc8aaaf748a488dafa544e9e6d79:True" State="false" />
+    <Setting Label="Beach Umbrella"         Id="IntCollect_455b2e21decfdc94a9f998ae16729d31:True" State="false" />
+    <Setting Label="Sid Beach Mound"        Id="IntCollect_ad9207612b5eb894cb16415f2681fa82:True" State="false" />
+    <Setting Label="Sid Beach"              Id="IntCollect_c2c2347627105bf4da08b948f6fc8ac2:True" State="false" />
+    <Setting Label="Shirley's Point South"  Id="IntCollect_3e97db0704ee4e146b04087e245c5218:True" State="false" />
+    <Setting Label="Shirley's Point North"  Id="IntCollect_cff508b7ecb9d964e8f7311cab2f7283:True" State="false" />
+    <Setting Label="Visitor Center Beach"   Id="IntCollect_c3e380e8e2855214ab426338e20e6abd:True" State="false" />
+    <Setting Label="West River South"       Id="IntCollect_c378c5e8fc364184c89e8044c4dd69f6:True" State="false" />
+    <Setting Label="West River North"       Id="IntCollect_2c76fbcc0aa5ec1449bb7dee581c5275:True" State="false" />
+    <Setting Label="Stone Tower"            Id="IntCollect_8fa998d3401359145b8b7ed720d6ee9d:True" State="false" />
+    <Setting Label="North Beach"            Id="IntCollect_6a858a484376bd84b828421a937acf34:True" State="false" />
+    <Setting Label="North Coast"            Id="IntCollect_a45902a38f1550646b024b588f2ba8f8:True" State="false" />
+    <Setting Label="Boat Isle"              Id="IntCollect_b27827c9dd2da7d45abe29435ca81623:True" State="false" />
+    <Setting Label="Boat Cliff"             Id="IntCollect_e52c0d5cc1c7e4746b52dcb000068ab9:True" State="false" />
+    <Setting Label="East Coast"             Id="IntCollect_51c0a55cd92995e47b6eb9cfc40f2cc0:True" State="false" />
+    <Setting Label="House North Beach"      Id="IntCollect_b79e697113b5dd449b9c19c501265d55:True" State="false" />
+    <Setting Label="Meteor Lake"            Id="IntCollect_a75dc1d4e16e90e42afcdb46d0346e01:True" State="false" />
+    <Setting Label="Good Creek Path Cliff"  Id="IntCollect_04057352c021ffd4b956bde04562e467:True" State="false" />
+    <Setting Label="Airstream Island North" Id="IntCollect_47d61fdcc703f46429f92c8ff913be91:True" State="false" />
+    <Setting Label="Airstream Island South" Id="IntCollect_e3bfacd18e1b01b4ea89ee39293dd06f:True" State="false" />
+    <Setting Label="Secret Island"          Id="IntCollect_a4014d703e1da8649ad42b11b7ee7550:True" State="false" />
+  </Setting>
+  <Setting Label="Chests" State="false">
+    <Setting Label="Blackwood Cliff (13)"       Id="Opened_4dd13ff50a718a444a97988513bc849a:True" State="false" />
+    <Setting Label="Good Creek Path (7)"        Id="Opened_393ba302a07d3e543b11bb1a50eff38f:True" State="false" />
+    <Setting Label="Good Creek Path Cliff (33)" Id="Opened_d2669396136ec93478cfa35f25ba481e:True" State="false" />
+    <Setting Label="Bucket Cliff (33)"          Id="Opened_0775a498d83d0094cb3ee40e2864bc0a:True" State="false" />
+  </Setting>
+  <Setting Label="Flowers" State="false">
+    <Setting Label="Bucket"      Id="Sapling2ab5ae5679c083b46b10db552f05b13c:True" State="false" />
+    <Setting Label="Hawk Peak 1" Id="Sapling7040b254cd00d5949a4da916a35100c4:True" State="false" />
+    <Setting Label="Hawk Peak 2" Id="Sapling58e0151c0ab326c488298ced113244da:True" State="false" />
+    <Setting Label="Hawk Peak 3" Id="Sapling022cbfea8fc20a448854752645832907:True" State="false" />
+  </Setting>
+  <Setting Label="Artists" State="false">
+    <Setting Label="Beach"      Id="Artist1Talk:True" State="false" />
+    <Setting Label="Lighthouse" Id="Artist2Talk:True" State="false" />
+    <Setting Label="Fast River" Id="Artist3Talk:True" State="false" />
+    <Setting Label="Graveyard"  Id="Artist4Talk:True" State="false" />
+    <Setting Label="Outlook"    Id="Artist5Talk:True" State="false" />
+  </Setting>
+  <Setting Label="Miscellaneous Items" State="false">
+    <Setting Label="Toy Shovel (Beach Cliff)" Id="IntCollect_d1382c47ed8c270428cfce6cf0e7cd56:True" State="false" />
+    <Setting Label="Shovel"                   Id="GotShovel:True"                                   State="false" />
+    <Setting Label="Shell Necklace"           Id="PROMPT_ShellNecklace:True"                        State="false" />
+    <Setting Label="Boat Key"                 Id="PROMPT_BoatKey:True"                              State="false" />
+    <Setting Label="Golden Fishing Rod"       Id="PROMPT_GoldenFishingRod:True"                     State="false" />
+    <Setting Label="Wristwatch"               Id="PROMPT_Watch:True"                                State="false" />
+    <Setting Label="Running Shoes"            Id="PROMPT_RunningShoes:True"                         State="false" />
+    <Setting Label="Provincial Park Hat"      Id="PROMPT_ParkHat:True"                              State="false" />
+    <Setting Label="Baseball Hat"             Id="$GotVolleyPrize3:True"                            State="false" />
+    <Setting Label="Sunhat"                   Id="PROMPT_Sunhat:True"                               State="false" />
+  </Setting>
+  <Setting Label="Miscellaneous Actions" State="false">
+    <Setting Label="Save &amp; Quit" State="false">
+      <Setting Label="Beach Hut" State="false" />
+      <Setting Label="Frog"      State="false" />
+      <Setting Label="Center"    State="false" />
+      <Setting Label="Frost"     State="false" />
+      <Setting Label="Outlook"   State="false" />
+      <Setting Label="Aunt May"  State="false" />
+    </Setting>
+    <Setting Label="Reach Summit" Id="MountainTopCutscene:True" State="true" />
+    <Setting Label="Finish Game"  Id="WonGameNiceJob:True"      State="true" />
+  </Setting>
+</Settings>
