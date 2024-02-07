@@ -80,7 +80,7 @@
     <Setting Label="Baseball Hat"             Id="$GotVolleyPrize3:True"                            State="false" />
     <Setting Label="Sunhat"                   Id="PROMPT_Sunhat:True"                               State="false" />
   </Setting>
-  <Setting Label="Miscellaneous Actions" State="false">
+  <Setting Label="Miscellaneous Actions" State="true">
     <Setting Label="Save &amp; Quit" State="false">
       <Setting Label="Beach Hut" State="false" />
       <Setting Label="Frog"      State="false" />
